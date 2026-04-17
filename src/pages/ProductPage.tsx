@@ -292,7 +292,9 @@ export function ProductPage() {
       <SearchModal
         open={searchOpen}
         onClose={() => setSearchOpen(false)}
-        products={products}
+        onSelectProduct={(productId) => {
+          navigate(`/producto/${productId}`)
+        }}
       />
 
       <CartDrawer

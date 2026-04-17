@@ -17,7 +17,7 @@ const SHIPPING_COST = 150 // Costo de envío
 
 export function CheckoutPage() {
   const cart = useCart()
-  const { lookup, products, categories } = useCatalog()
+  const { lookup, categories } = useCatalog()
   const navigate = useNavigate()
   const [paymentMethod, setPaymentMethod] = useState<'whatsapp' | 'mercadopago' | 'stripe'>('whatsapp')
 
@@ -402,7 +402,9 @@ export function CheckoutPage() {
       <SearchModal
         open={searchOpen}
         onClose={() => setSearchOpen(false)}
-        products={products}
+        onSelectProduct={(productId) => {
+          navigate(`/producto/${productId}`)
+        }}
       />
 
       <CartDrawer

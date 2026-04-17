@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
-import { catalog as initialCatalog, type Product, type CatalogLookup } from './catalog'
+import { catalog as initialCatalog, type Product, type CatalogLookup, type Category } from './catalog'
 
 interface CatalogContextType {
   products: Product[]
@@ -7,7 +7,7 @@ interface CatalogContextType {
   updateProduct: (product: Product) => void
   deleteProduct: (id: string) => void
   lookup: CatalogLookup
-  categories: string[]
+  categories: Category[]
 }
 
 const CatalogContext = createContext<CatalogContextType | undefined>(undefined)
@@ -50,7 +50,7 @@ export function CatalogProvider({ children }: { children: React.ReactNode }) {
     ),
   }
 
-  const categories = [...new Set(products.map((p) => p.category))]
+  const categories: Category[] = [...new Set(products.map((p) => p.category))]
 
   return (
     <CatalogContext.Provider value={{ products, addProduct, updateProduct, deleteProduct, lookup, categories }}>
