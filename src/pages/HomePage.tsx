@@ -79,17 +79,14 @@ export function HomePage() {
 
       {/* Hero Section - Immersive & Premium */}
       <section className="relative h-dvh min-h-175 bg-bg text-white overflow-hidden flex flex-col">
-        {/* Safe Area for Navbar - Adjusted to 104px (top-6 + h-20) */}
-        <div className="h-26 shrink-0" />
-
-        {/* Carousel Background - Positioned below safe area */}
+        {/* Carousel Background */}
         <div className="absolute inset-0 z-0">
           {BANNER_IMAGES.map((img, idx) => (
             <img
               key={img}
               src={img}
               alt=""
-              className={`absolute inset-x-0 top-26 bottom-0 bg-cover bg-position-[center_top] transition-all duration-10000 ease-out ${idx === currentBanner ? 'opacity-100' : 'opacity-0'}`}
+              className={`absolute inset-0 h-full w-full object-cover object-top transition-opacity duration-[2000ms] ease-out ${idx === currentBanner ? 'opacity-100' : 'opacity-0'}`}
               aria-hidden="true"
               draggable={false}
             />
