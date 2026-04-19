@@ -409,6 +409,54 @@ export function HomePage() {
         </div>
       </section>
 
+      {/* Policy & Logistics Sections */}
+      <section className="py-24 bg-bg text-white border-t border-white/5">
+        <div className="max-w-7xl mx-auto px-6 space-y-12">
+          <article id="envios" className="glass rounded-3xl p-8 md:p-12 border border-white/10">
+            <div className="max-w-3xl">
+              <h3 className="text-xs font-black tracking-[0.3em] uppercase text-accent mb-4">Logística Pro</h3>
+              <h2 className="text-3xl md:text-5xl font-black uppercase italic tracking-tight mb-6">Envíos y Entregas</h2>
+              <p className="text-white/70 leading-relaxed mb-6">
+                Procesamos pedidos de lunes a sábado. Una vez confirmado tu pago, el pedido se prepara entre 12 y 24 horas hábiles y se envía con paquetería nacional con cobertura en todo México.
+              </p>
+              <ul className="space-y-3 text-sm text-white/70">
+                <li>Tiempo estimado de entrega: 24 a 72 horas hábiles en zonas urbanas.</li>
+                <li>Envío estándar: $150 MXN.</li>
+                <li>Envío gratis automático a partir de 4 artículos en carrito.</li>
+                <li>Te compartimos guía de rastreo por WhatsApp o correo al despachar.</li>
+              </ul>
+            </div>
+          </article>
+
+          <article id="terminos" className="glass rounded-3xl p-8 md:p-12 border border-white/10">
+            <div className="max-w-4xl">
+              <h3 className="text-xs font-black tracking-[0.3em] uppercase text-accent mb-4">Términos</h3>
+              <h2 className="text-3xl md:text-5xl font-black uppercase italic tracking-tight mb-6">Términos y Condiciones</h2>
+              <div className="space-y-4 text-sm text-white/70 leading-relaxed">
+                <p>Al realizar una compra en MUÑEK SUPLEMENTOS aceptas nuestros términos comerciales y operativos.</p>
+                <p>Los productos publicados están sujetos a disponibilidad de inventario. En caso de falta de stock, te contactaremos para reembolso o sustitución.</p>
+                <p>Los precios se muestran en MXN e incluyen IVA cuando aplique. MUÑEK SUPLEMENTOS puede actualizar precios sin previo aviso.</p>
+                <p>Por seguridad e higiene, no se aceptan devoluciones de productos abiertos o manipulados. Si tu pedido llega dañado, repórtalo dentro de las primeras 24 horas con evidencia fotográfica.</p>
+                <p>Este sitio ofrece contenido informativo y no sustituye asesoría médica profesional. Consulta a un especialista antes de iniciar cualquier suplementación.</p>
+              </div>
+            </div>
+          </article>
+
+          <article id="privacidad" className="glass rounded-3xl p-8 md:p-12 border border-white/10">
+            <div className="max-w-4xl">
+              <h3 className="text-xs font-black tracking-[0.3em] uppercase text-accent mb-4">Privacidad</h3>
+              <h2 className="text-3xl md:text-5xl font-black uppercase italic tracking-tight mb-6">Aviso de Privacidad</h2>
+              <div className="space-y-4 text-sm text-white/70 leading-relaxed">
+                <p>Recopilamos datos de contacto y entrega únicamente para procesar tus pedidos, confirmar pagos y brindar soporte postventa.</p>
+                <p>No comercializamos ni compartimos tu información personal con terceros ajenos al proceso logístico y de pago.</p>
+                <p>Protegemos tus datos con medidas administrativas y técnicas razonables para evitar accesos no autorizados.</p>
+                <p>Puedes solicitar corrección o eliminación de tus datos enviando un correo a elite@muneksuplementos.com.</p>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+
       {/* Footer - Elite Finish */}
       <footer className="bg-bg border-t border-hairline text-white">
         <div className="max-w-7xl mx-auto px-6 py-20">
@@ -469,13 +517,15 @@ export function HomePage() {
               </ul>
               <div className="flex gap-4 mt-10">
                 {[
-                  { icon: 'Facebook', url: '#' },
-                  { icon: 'Instagram', url: '#' },
-                  { icon: 'TikTok', url: '#' }
+                  { icon: 'Facebook', url: 'https://www.facebook.com/' },
+                  { icon: 'Instagram', url: 'https://www.instagram.com/' },
+                  { icon: 'TikTok', url: 'https://www.tiktok.com/' }
                 ].map((social) => (
                   <a
                     key={social.icon}
                     href={social.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="w-10 h-10 rounded-xl glass flex items-center justify-center transition-all hover:bg-accent hover:-translate-y-1 hover:shadow-[0_0_20px_var(--color-accent)]"
                     aria-label={social.icon}
                   >
