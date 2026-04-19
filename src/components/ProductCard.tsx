@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import type { Product } from '../app/catalog'
 import { formatMXN } from '../app/money'
+import { GradientVisual } from './GradientVisual'
 
 type Props = {
   product: Product
@@ -34,12 +35,12 @@ export function ProductCard({ product, onAdd }: Props) {
     >
       {/* Image area with gradient or URL */}
       <Link to={`/producto/${product.id}`} className="block">
-        <div 
-          className="relative aspect-square overflow-hidden"
-          style={product.image.kind === 'gradient' ? { background: `linear-gradient(135deg, ${product.image.a}, ${product.image.b})` } : {}}
-        >
+        <div className="relative aspect-square overflow-hidden">
           {product.image.kind === 'url' && (
             <img src={product.image.url} className="w-full h-full object-cover" alt={product.name} />
+          )}
+          {product.image.kind === 'gradient' && (
+            <GradientVisual a={product.image.a} b={product.image.b} className="absolute inset-0 h-full w-full" />
           )}
           <div className="absolute inset-0 opacity-20 bg-linear-to-br from-white/20 to-black/40" />
 

@@ -1,16 +1,6 @@
-import React, { createContext, useContext, useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { catalog as initialCatalog, type Product, type CatalogLookup, type Category } from './catalog'
-
-interface CatalogContextType {
-  products: Product[]
-  addProduct: (product: Product) => void
-  updateProduct: (product: Product) => void
-  deleteProduct: (id: string) => void
-  lookup: CatalogLookup
-  categories: Category[]
-}
-
-const CatalogContext = createContext<CatalogContextType | undefined>(undefined)
+import { CatalogContext } from './CatalogContext'
 
 export function CatalogProvider({ children }: { children: React.ReactNode }) {
   const [products, setProducts] = useState<Product[]>(() => {
@@ -59,10 +49,3 @@ export function CatalogProvider({ children }: { children: React.ReactNode }) {
   )
 }
 
-export function useCatalog() {
-  const context = useContext(CatalogContext)
-  if (!context) {
-    throw new Error('useCatalog must be used within a CatalogProvider')
-  }
-  return context
-}

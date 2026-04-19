@@ -27,6 +27,10 @@
   border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
+.rounded-premium {
+  border-radius: 2rem;
+}
+
 
 html,
 body {
@@ -66,4 +70,12 @@ a {
 ::-webkit-scrollbar-thumb {
   background: rgba(0, 0, 0, 0.15);
   border-radius: 3px;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
 }

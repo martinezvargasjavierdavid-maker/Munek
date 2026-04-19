@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { CartDrawer } from '../components/CartDrawer'
 import { Navbar } from '../components/Navbar'
 import { ProductCard } from '../components/ProductCard'
@@ -6,7 +7,7 @@ import { CategoryMenu } from '../components/CategoryMenu'
 import { SearchModal } from '../components/SearchModal'
 import { ProductCarousel } from '../components/ProductCarousel'
 import { useCart } from '../app/useCart'
-import { useCatalog } from '../app/CatalogProvider'
+import { useCatalog } from '../app/useCatalog'
 import { type Category } from '../app/catalog'
 
 const CATEGORIES: Category[] = [
@@ -28,9 +29,9 @@ const BANNER_IMAGES = [
 ]
 
 export function HomePage() {
+  const [searchParams, setSearchParams] = useSearchParams()
   const [menuOpen, setMenuOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
-  const [activeCategory, setActiveCategory] = useState<Category | null>(null)
   const [currentBanner, setCurrentBanner] = useState(0)
   const cart = useCart()
   const { products } = useCatalog()
@@ -41,6 +42,15 @@ export function HomePage() {
     }, 6000)
     return () => clearInterval(timer)
   }, [])
+
+  const activeCategory = (() => {
+    const category = searchParams.get('category') as Category | null
+    return category && CATEGORIES.includes(category) ? category : null
+  })()
+
+  const updateCategory = (category: Category | null) => {
+    setSearchParams(category ? { category } : {})
+  }
 
   const filtered = useMemo(() => {
     if (!activeCategory) return products
@@ -62,13 +72,13 @@ export function HomePage() {
         categories={CATEGORIES}
         active={activeCategory}
         onSelect={(cat: Category | null) => {
-          setActiveCategory(cat)
+          updateCategory(cat)
           setMenuOpen(false)
         }}
       />
 
       {/* Hero Section - Immersive & Premium */}
-      <section className="relative h-dvh min-h-[700px] bg-bg text-white overflow-hidden flex flex-col">
+      <section className="relative h-dvh min-h-175 bg-bg text-white overflow-hidden flex flex-col">
         {/* Safe Area for Navbar - Adjusted to 104px (top-6 + h-20) */}
         <div className="h-26 shrink-0" />
 
@@ -77,13 +87,8 @@ export function HomePage() {
           {BANNER_IMAGES.map((img, idx) => (
             <div
               key={img}
-              className={`absolute inset-0 bg-cover bg-[center_top] transition-all duration-[10000ms] ease-out ${idx === currentBanner ? 'opacity-100' : 'opacity-0'
-                }`}
-              style={{
-                backgroundImage: `url('${img}')`,
-                willChange: 'opacity',
-                marginTop: '104px' // Precise offset to clear the navbar
-              }}
+              className={`absolute inset-x-0 top-26 bottom-0 bg-cover bg-position-[center_top] transition-all duration-10000 ease-out ${idx === currentBanner ? 'opacity-100' : 'opacity-0'}`}
+              aria-hidden="true"
             />
           ))}
         </div>
@@ -112,7 +117,7 @@ export function HomePage() {
               <button
                 type="button"
                 onClick={() => {
-                  setActiveCategory(null)
+                  updateCategory(null)
                   document.getElementById('productos')?.scrollIntoView({ behavior: 'smooth' })
                 }}
                 className="group relative bg-white text-black font-black uppercase italic tracking-widest px-10 py-5 rounded-xl transition-all hover:scale-105 active:scale-95 shadow-premium overflow-hidden"
@@ -208,7 +213,7 @@ export function HomePage() {
           {activeCategory && (
             <button
               type="button"
-              onClick={() => setActiveCategory(null)}
+              onClick={() => updateCategory(null)}
               className="text-sm text-accent hover:underline"
             >
               ← Ver todos los productos
@@ -244,7 +249,7 @@ export function HomePage() {
             {/* Logo Column */}
             <div className="lg:col-span-5 relative">
               <div className="relative group">
-                <div className="aspect-square rounded-[2rem] overflow-hidden glass p-8 flex items-center justify-center shadow-premium relative z-10">
+                <div className="aspect-square rounded-premium overflow-hidden glass p-8 flex items-center justify-center shadow-premium relative z-10">
                   <img
                     src="/splementos.png"
                     alt="Logo Muñek"
@@ -312,7 +317,7 @@ export function HomePage() {
                 href="https://maps.app.goo.gl/jmx1tBYo2UqwXGpW9?g_st=iw" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="text-white/60 text-sm mb-6 uppercase tracking-wider hover:text-accent transition-colors block flex items-center gap-2"
+                className="text-white/60 text-sm mb-6 uppercase tracking-wider hover:text-accent transition-colors flex items-center gap-2"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
@@ -349,7 +354,7 @@ export function HomePage() {
                 href="https://maps.app.goo.gl/8FLdELCpH1KAPrcN7" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="text-white/60 text-sm mb-6 uppercase tracking-wider hover:text-accent transition-colors block flex items-center gap-2"
+                className="text-white/60 text-sm mb-6 uppercase tracking-wider hover:text-accent transition-colors flex items-center gap-2"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
@@ -416,7 +421,7 @@ export function HomePage() {
                   className="h-14 w-auto grayscale group-hover:grayscale-0 transition-all duration-500"
                 />
               </div>
-              <p className="text-white/40 text-sm leading-relaxed max-w-[240px] font-medium italic">
+              <p className="text-white/40 text-sm leading-relaxed max-w-60 font-medium italic">
                 Elevando tu potencial humano a través de la suplementación de élite. Est. 2024.
               </p>
             </div>
@@ -428,7 +433,7 @@ export function HomePage() {
                     <button
                       type="button"
                       onClick={() => {
-                        setActiveCategory(cat)
+                        updateCategory(cat)
                         document.getElementById('productos')?.scrollIntoView({ behavior: 'smooth' })
                       }}
                       className="hover:text-white transition-colors hover:translate-x-1 inline-block"
@@ -500,7 +505,7 @@ export function HomePage() {
         open={searchOpen}
         onClose={() => setSearchOpen(false)}
         onSelectProduct={(productId) => {
-          setActiveCategory(null)
+          updateCategory(null)
           setTimeout(() => {
             const el = document.getElementById(`product-${productId}`)
             el?.scrollIntoView({ behavior: 'smooth', block: 'center' })

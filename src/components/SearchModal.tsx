@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { type Product } from '../app/catalog'
-import { useCatalog } from '../app/CatalogProvider'
+import { useCatalog } from '../app/useCatalog'
 import { formatMXN } from '../app/money'
+import { GradientVisual } from './GradientVisual'
 
 type Props = {
   open: boolean
@@ -126,14 +127,11 @@ export function SearchModal({ open, onClose, onSelectProduct }: Props) {
                     onClick={() => handleSelect(product)}
                     className="w-full flex items-center gap-4 p-3 rounded-xl hover:bg-gray-50 transition-colors text-left"
                   >
-                    <div
-                      className="w-14 h-14 rounded-lg shrink-0 overflow-hidden flex items-center justify-center"
-                      style={product.image.kind === 'gradient' ? { background: `linear-gradient(135deg, ${product.image.a}, ${product.image.b})` } : {}}
-                    >
+                    <div className="w-14 h-14 rounded-lg shrink-0 overflow-hidden flex items-center justify-center relative">
                       {product.image.kind === 'url' ? (
                         <img src={product.image.url} className="w-full h-full object-cover" alt={product.name} />
                       ) : (
-                        <div className="w-full h-full bg-linear-to-br from-gray-200 to-gray-50 opacity-30" />
+                        <GradientVisual a={product.image.a} b={product.image.b} className="absolute inset-0 h-full w-full" />
                       )}
                     </div>
                     <div className="flex-1 min-w-0">

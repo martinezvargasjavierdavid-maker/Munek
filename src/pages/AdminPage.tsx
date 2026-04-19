@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { useCatalog } from '../app/CatalogProvider'
+import { useCatalog } from '../app/useCatalog'
 import { type Category, type Product } from '../app/catalog'
 import { formatMXN } from '../app/money'
 import { Navbar } from '../components/Navbar'
 import { useCart } from '../app/useCart'
+import { GradientVisual } from '../components/GradientVisual'
 
 export function AdminPage() {
   const { products, addProduct, updateProduct, deleteProduct } = useCatalog()
@@ -37,6 +38,7 @@ export function AdminPage() {
   }
 
   const [optimizing, setOptimizing] = useState(false)
+  const currentGradient = formData.image?.kind === 'gradient' ? formData.image : null
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -144,8 +146,10 @@ export function AdminPage() {
                   <div>
                     <label className="block text-[10px] font-black uppercase tracking-widest text-white/30 mb-2">Categoría</label>
                     <select
+                      id="category"
                       value={formData.category}
                       onChange={e => setFormData({ ...formData, category: e.target.value as Category })}
+                      title="Categoría del producto"
                       className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:border-accent focus:outline-none transition-all appearance-none text-white [&>option]:bg-zinc-900 [&>option]:text-white"
                     >
                       <option value="Proteína">Proteína</option>
@@ -159,11 +163,13 @@ export function AdminPage() {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-[10px] font-black uppercase tracking-widest text-white/30 mb-2">Marca</label>
+                    <label htmlFor="brand" className="block text-[10px] font-black uppercase tracking-widest text-white/30 mb-2">Marca</label>
                     <input
+                      id="brand"
                       type="text"
                       value={formData.brand}
                       onChange={e => setFormData({ ...formData, brand: e.target.value })}
+                      placeholder="MUÑEK LABS"
                       className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:border-accent focus:outline-none transition-all"
                     />
                   </div>
@@ -196,6 +202,7 @@ export function AdminPage() {
                       type="file"
                       accept="image/*"
                       onChange={handleImageUpload}
+                      title="Subir imagen del producto"
                       className="hidden"
                     />
                   </div>
@@ -212,20 +219,22 @@ export function AdminPage() {
                   {formData.image?.kind === 'gradient' && (
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-[10px] font-black uppercase tracking-widest text-white/30 mb-2">Color A</label>
+                        <label htmlFor="color-a" className="block text-[10px] font-black uppercase tracking-widest text-white/30 mb-2">Color A</label>
                         <input
+                          id="color-a"
                           type="color"
-                          value={formData.image.a}
-                          onChange={e => setFormData({ ...formData, image: { kind: 'gradient', a: e.target.value, b: (formData.image as any).b } })}
+                          value={currentGradient?.a ?? '#d10b1c'}
+                          onChange={e => setFormData({ ...formData, image: { kind: 'gradient', a: e.target.value, b: currentGradient?.b ?? '#0b0b0c' } })}
                           className="w-full h-10 bg-transparent border-none cursor-pointer"
                         />
                       </div>
                       <div>
-                        <label className="block text-[10px] font-black uppercase tracking-widest text-white/30 mb-2">Color B</label>
+                        <label htmlFor="color-b" className="block text-[10px] font-black uppercase tracking-widest text-white/30 mb-2">Color B</label>
                         <input
+                          id="color-b"
                           type="color"
-                          value={(formData.image as any).b}
-                          onChange={e => setFormData({ ...formData, image: { kind: 'gradient', a: (formData.image as any).a, b: e.target.value } })}
+                          value={currentGradient?.b ?? '#0b0b0c'}
+                          onChange={e => setFormData({ ...formData, image: { kind: 'gradient', a: currentGradient?.a ?? '#d10b1c', b: e.target.value } })}
                           className="w-full h-10 bg-transparent border-none cursor-pointer"
                         />
                       </div>
@@ -234,11 +243,13 @@ export function AdminPage() {
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-black uppercase tracking-widest text-white/30 mb-2">Descripción</label>
+                  <label htmlFor="description" className="block text-[10px] font-black uppercase tracking-widest text-white/30 mb-2">Descripción</label>
                   <textarea
+                    id="description"
                     rows={3}
                     value={formData.description}
                     onChange={e => setFormData({ ...formData, description: e.target.value })}
+                    placeholder="Describe el producto"
                     className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:border-accent focus:outline-none transition-all resize-none"
                   />
                 </div>
@@ -280,8 +291,9 @@ export function AdminPage() {
                         
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <label className="block text-[10px] font-black uppercase tracking-widest text-white/30 mb-2">Sabor</label>
+                            <label htmlFor={`flavor-${index}`} className="block text-[10px] font-black uppercase tracking-widest text-white/30 mb-2">Sabor</label>
                             <input
+                              id={`flavor-${index}`}
                               type="text"
                               value={variant.flavor}
                               onChange={e => {
@@ -295,8 +307,9 @@ export function AdminPage() {
                             />
                           </div>
                           <div>
-                            <label className="block text-[10px] font-black uppercase tracking-widest text-white/30 mb-2">Tamaño</label>
+                            <label htmlFor={`size-${index}`} className="block text-[10px] font-black uppercase tracking-widest text-white/30 mb-2">Tamaño</label>
                             <input
+                              id={`size-${index}`}
                               type="text"
                               value={variant.size}
                               onChange={e => {
@@ -311,8 +324,9 @@ export function AdminPage() {
                           </div>
                         </div>
                         <div>
-                          <label className="block text-[10px] font-black uppercase tracking-widest text-white/30 mb-2">Precio (MXN)</label>
+                          <label htmlFor={`price-${index}`} className="block text-[10px] font-black uppercase tracking-widest text-white/30 mb-2">Precio (MXN)</label>
                           <input
+                            id={`price-${index}`}
                             type="number"
                             required
                             value={variant.price === 0 ? '' : variant.price}
@@ -358,11 +372,9 @@ export function AdminPage() {
               {products.map(p => (
                 <div key={p.id} className="glass rounded-2xl p-6 border border-white/5 flex items-center justify-between group hover:border-white/10 transition-all">
                   <div className="flex items-center gap-6">
-                    <div 
-                      className="w-16 h-16 rounded-xl shrink-0 shadow-lg overflow-hidden" 
-                      style={p.image.kind === 'gradient' ? { background: `linear-gradient(135deg, ${p.image.a}, ${p.image.b})` } : {}}
-                    >
+                    <div className="w-16 h-16 rounded-xl shrink-0 shadow-lg overflow-hidden relative">
                       {p.image.kind === 'url' && <img src={p.image.url} className="w-full h-full object-cover" alt={p.name} />}
+                      {p.image.kind === 'gradient' && <GradientVisual a={p.image.a} b={p.image.b} className="absolute inset-0 h-full w-full" />}
                     </div>
                     <div>
                       <div className="flex items-center gap-2 mb-1">

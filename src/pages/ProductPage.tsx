@@ -1,12 +1,13 @@
 import { useState } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
-import { useCatalog } from '../app/CatalogProvider'
+import { useCatalog } from '../app/useCatalog'
 import { useCart } from '../app/useCart'
 import { formatMXN } from '../app/money'
 import { CartDrawer } from '../components/CartDrawer'
 import { Navbar } from '../components/Navbar'
 import { CategoryMenu } from '../components/CategoryMenu'
 import { SearchModal } from '../components/SearchModal'
+import { GradientVisual } from '../components/GradientVisual'
 
 export function ProductPage() {
   const { productId } = useParams<{ productId: string }>()
@@ -18,7 +19,7 @@ export function ProductPage() {
   
   const product = products.find(p => p.id === productId)
   
-  const [selectedVariant, setSelectedVariant] = useState(product?.variants[0] ?? null)
+  const [selectedVariantId, setSelectedVariantId] = useState(product?.variants[0]?.id ?? '')
   const [quantity, setQuantity] = useState(1)
   const [addedToCart, setAddedToCart] = useState(false)
 
@@ -42,6 +43,8 @@ export function ProductPage() {
       </div>
     )
   }
+
+  const selectedVariant = product.variants.find((variant) => variant.id === selectedVariantId) ?? product.variants[0] ?? null
 
   const handleAddToCart = () => {
     if (selectedVariant && selectedVariant.inStock) {
@@ -77,7 +80,7 @@ export function ProductPage() {
         <nav className="text-[10px] font-black uppercase tracking-[0.2em] text-white/30">
           <Link to="/" className="hover:text-accent transition-colors">Inicio</Link>
           <span className="mx-3 text-white/10">|</span>
-          <Link to={`/?categoria=${product.category}`} className="hover:text-accent transition-colors">{product.category}</Link>
+          <Link to={`/?category=${product.category}`} className="hover:text-accent transition-colors">{product.category}</Link>
           <span className="mx-3 text-white/10">|</span>
           <span className="text-white/60">{product.name}</span>
         </nav>
@@ -87,14 +90,12 @@ export function ProductPage() {
       <main className="max-w-6xl mx-auto px-6 pb-16">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           {/* Product Image */}
-          <div 
-            className="aspect-square rounded-[2rem] overflow-hidden glass flex items-center justify-center relative shadow-premium group"
-            style={product.image.kind === 'gradient' ? { background: `linear-gradient(135deg, ${product.image.a}, ${product.image.b})` } : {}}
-          >
+          <div className="aspect-square rounded-premium overflow-hidden glass flex items-center justify-center relative shadow-premium group">
             {product.image.kind === 'url' ? (
               <img src={product.image.url} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt={product.name} />
             ) : (
               <>
+                <GradientVisual a={product.image.a} b={product.image.b} className="absolute inset-0 h-full w-full" />
                 <div className="absolute inset-0 bg-linear-to-br from-white/5 to-transparent opacity-50" />
                 <div className="relative z-10 w-full h-full flex items-center justify-center transition-transform duration-700 group-hover:scale-110">
                   <span className="text-6xl md:text-8xl font-black text-white/10 italic select-none">MUÑEK</span>
@@ -136,7 +137,7 @@ export function ProductPage() {
                   <button
                     key={variant.id}
                     type="button"
-                    onClick={() => setSelectedVariant(variant)}
+                    onClick={() => setSelectedVariantId(variant.id)}
                     className={`px-6 py-3 rounded-xl border font-bold text-sm transition-all duration-300 ${
                       selectedVariant?.id === variant.id
                         ? 'border-accent bg-accent text-white shadow-lg shadow-accent/20'

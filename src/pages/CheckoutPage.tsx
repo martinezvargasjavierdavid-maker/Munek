@@ -1,12 +1,13 @@
 import { useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { useCatalog } from '../app/CatalogProvider'
+import { useCatalog } from '../app/useCatalog'
 import { useCart } from '../app/useCart'
 import { formatMXN } from '../app/money'
 import { Navbar } from '../components/Navbar'
 import { CartDrawer } from '../components/CartDrawer'
 import { CategoryMenu } from '../components/CategoryMenu'
 import { SearchModal } from '../components/SearchModal'
+import type { Product, Variant } from '../app/catalog'
 
 // Configuración - Edita estos valores para tu negocio
 const WHATSAPP_NUMBER = '522462094321' // Número de WhatsApp (con código de país)
@@ -43,8 +44,8 @@ export function CheckoutPage() {
   }, [cart.lines, lookup.byVariantId]) as Array<{
     variantId: string
     qty: number
-    product: any
-    variant: any
+    product: Product
+    variant: Variant
   }>
 
   const shipping = cart.totalItems >= FREE_SHIPPING_ITEMS_THRESHOLD ? 0 : SHIPPING_COST

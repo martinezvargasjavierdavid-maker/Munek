@@ -1,8 +1,10 @@
 import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
-import { useCatalog } from '../app/CatalogProvider'
+import { useCatalog } from '../app/useCatalog'
 import { useCart } from '../app/useCart'
 import { formatMXN } from '../app/money'
+import type { Product, Variant } from '../app/catalog'
+import { GradientVisual } from './GradientVisual'
 
 type Props = {
   open: boolean
@@ -28,8 +30,8 @@ export function CartDrawer({ open, onClose }: Props) {
   }, [cart.lines, lookup.byVariantId]) as Array<{
     variantId: string
     qty: number
-    product: any
-    variant: any
+    product: Product
+    variant: Variant
   }>
 
   return (
@@ -103,14 +105,11 @@ export function CartDrawer({ open, onClose }: Props) {
                     <div className="absolute inset-0 bg-accent/5 opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl -z-10" />
 
                     {/* Product visual placeholder */}
-                    <div
-                      className="w-24 h-24 rounded-xl shrink-0 glass overflow-hidden flex items-center justify-center text-[10px] font-black italic tracking-widest text-white/10"
-                      style={l.product.image.kind === 'gradient' ? { background: `linear-gradient(135deg, ${l.product.image.a}, ${l.product.image.b})` } : {}}
-                    >
+                    <div className="w-24 h-24 rounded-xl shrink-0 glass overflow-hidden flex items-center justify-center text-[10px] font-black italic tracking-widest text-white/10 relative">
                       {l.product.image.kind === 'url' ? (
                         <img src={l.product.image.url} className="w-full h-full object-cover" alt={l.product.name} />
                       ) : (
-                        'IMG'
+                        <GradientVisual a={l.product.image.a} b={l.product.image.b} className="absolute inset-0 h-full w-full" />
                       )}
                     </div>
 

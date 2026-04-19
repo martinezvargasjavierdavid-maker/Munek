@@ -51,7 +51,7 @@ export function ProductCarousel({ title, products, onAdd }: Props) {
                 {showLeftArrow && (
                     <button
                         onClick={() => scroll('left')}
-                        className="absolute -left-4 top-1/2 -translate-y-1/2 z-30 w-12 h-12 rounded-full glass flex items-center justify-center text-white hover:bg-accent transition-all duration-300 opacity-0 group-hover/carousel:opacity-100 hidden md:flex shadow-premium"
+                        className="absolute -left-4 top-1/2 -translate-y-1/2 z-30 w-12 h-12 rounded-full glass inline-flex items-center justify-center text-white hover:bg-accent transition-all duration-300 opacity-0 pointer-events-none group-hover/carousel:opacity-100 group-hover/carousel:pointer-events-auto md:opacity-100 md:pointer-events-auto shadow-premium"
                         aria-label="Anterior"
                     >
                         <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -63,7 +63,7 @@ export function ProductCarousel({ title, products, onAdd }: Props) {
                 {showRightArrow && (
                     <button
                         onClick={() => scroll('right')}
-                        className="absolute -right-4 top-1/2 -translate-y-1/2 z-30 w-12 h-12 rounded-full glass flex items-center justify-center text-white hover:bg-accent transition-all duration-300 opacity-0 group-hover/carousel:opacity-100 hidden md:flex shadow-premium"
+                        className="absolute -right-4 top-1/2 -translate-y-1/2 z-30 w-12 h-12 rounded-full glass inline-flex items-center justify-center text-white hover:bg-accent transition-all duration-300 opacity-0 pointer-events-none group-hover/carousel:opacity-100 group-hover/carousel:pointer-events-auto md:opacity-100 md:pointer-events-auto shadow-premium"
                         aria-label="Siguiente"
                     >
                         <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -77,10 +77,9 @@ export function ProductCarousel({ title, products, onAdd }: Props) {
                     ref={scrollRef}
                     onScroll={checkScroll}
                     className="flex gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-4 -mx-2 px-2"
-                    style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
                 >
                     {products.map((product) => (
-                        <div key={product.id} className="w-[220px] md:w-[260px] flex-shrink-0 snap-start">
+                        <div key={product.id} className="w-55 md:w-65 shrink-0 snap-start">
                             <ProductCard
                                 product={product}
                                 onAdd={onAdd}
