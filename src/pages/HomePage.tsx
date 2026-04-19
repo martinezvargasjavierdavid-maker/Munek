@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { CartDrawer } from '../components/CartDrawer'
 import { Navbar } from '../components/Navbar'
 import { ProductCard } from '../components/ProductCard'
@@ -409,54 +409,6 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* Policy & Logistics Sections */}
-      <section className="py-24 bg-bg text-white border-t border-white/5">
-        <div className="max-w-7xl mx-auto px-6 space-y-12">
-          <article id="envios" className="glass rounded-3xl p-8 md:p-12 border border-white/10">
-            <div className="max-w-3xl">
-              <h3 className="text-xs font-black tracking-[0.3em] uppercase text-accent mb-4">Logística Pro</h3>
-              <h2 className="text-3xl md:text-5xl font-black uppercase italic tracking-tight mb-6">Envíos y Entregas</h2>
-              <p className="text-white/70 leading-relaxed mb-6">
-                Procesamos pedidos de lunes a sábado. Una vez confirmado tu pago, el pedido se prepara entre 12 y 24 horas hábiles y se envía con paquetería nacional con cobertura en todo México.
-              </p>
-              <ul className="space-y-3 text-sm text-white/70">
-                <li>Tiempo estimado de entrega: 24 a 72 horas hábiles en zonas urbanas.</li>
-                <li>Envío estándar: $150 MXN.</li>
-                <li>Envío gratis automático a partir de 4 artículos en carrito.</li>
-                <li>Te compartimos guía de rastreo por WhatsApp o correo al despachar.</li>
-              </ul>
-            </div>
-          </article>
-
-          <article id="terminos" className="glass rounded-3xl p-8 md:p-12 border border-white/10">
-            <div className="max-w-4xl">
-              <h3 className="text-xs font-black tracking-[0.3em] uppercase text-accent mb-4">Términos</h3>
-              <h2 className="text-3xl md:text-5xl font-black uppercase italic tracking-tight mb-6">Términos y Condiciones</h2>
-              <div className="space-y-4 text-sm text-white/70 leading-relaxed">
-                <p>Al realizar una compra en MUÑEK SUPLEMENTOS aceptas nuestros términos comerciales y operativos.</p>
-                <p>Los productos publicados están sujetos a disponibilidad de inventario. En caso de falta de stock, te contactaremos para reembolso o sustitución.</p>
-                <p>Los precios se muestran en MXN e incluyen IVA cuando aplique. MUÑEK SUPLEMENTOS puede actualizar precios sin previo aviso.</p>
-                <p>Por seguridad e higiene, no se aceptan devoluciones de productos abiertos o manipulados. Si tu pedido llega dañado, repórtalo dentro de las primeras 24 horas con evidencia fotográfica.</p>
-                <p>Este sitio ofrece contenido informativo y no sustituye asesoría médica profesional. Consulta a un especialista antes de iniciar cualquier suplementación.</p>
-              </div>
-            </div>
-          </article>
-
-          <article id="privacidad" className="glass rounded-3xl p-8 md:p-12 border border-white/10">
-            <div className="max-w-4xl">
-              <h3 className="text-xs font-black tracking-[0.3em] uppercase text-accent mb-4">Privacidad</h3>
-              <h2 className="text-3xl md:text-5xl font-black uppercase italic tracking-tight mb-6">Aviso de Privacidad</h2>
-              <div className="space-y-4 text-sm text-white/70 leading-relaxed">
-                <p>Recopilamos datos de contacto y entrega únicamente para procesar tus pedidos, confirmar pagos y brindar soporte postventa.</p>
-                <p>No comercializamos ni compartimos tu información personal con terceros ajenos al proceso logístico y de pago.</p>
-                <p>Protegemos tus datos con medidas administrativas y técnicas razonables para evitar accesos no autorizados.</p>
-                <p>Puedes solicitar corrección o eliminación de tus datos enviando un correo a elite@muneksuplementos.com.</p>
-              </div>
-            </div>
-          </article>
-        </div>
-      </section>
-
       {/* Footer - Elite Finish */}
       <footer className="bg-bg border-t border-hairline text-white">
         <div className="max-w-7xl mx-auto px-6 py-20">
@@ -496,9 +448,9 @@ export function HomePage() {
               <h4 className="text-xs font-black mb-8 tracking-[0.3em] text-accent uppercase italic">Elite Club</h4>
               <ul className="space-y-4 text-sm text-white/50 font-bold uppercase italic tracking-tight">
                 <li><a href="#sobre-nosotros" className="hover:text-white transition-colors">ADN Muñek</a></li>
-                <li><a href="#envios" className="hover:text-white transition-colors">Logística Pro</a></li>
-                <li><a href="#terminos" className="hover:text-white transition-colors">Términos</a></li>
-                <li><a href="#privacidad" className="hover:text-white transition-colors">Privacidad</a></li>
+                <li><Link to="/logistica-pro" className="hover:text-white transition-colors">Logística Pro</Link></li>
+                <li><Link to="/terminos" className="hover:text-white transition-colors">Términos</Link></li>
+                <li><Link to="/privacidad" className="hover:text-white transition-colors">Privacidad</Link></li>
               </ul>
             </div>
             <div>
