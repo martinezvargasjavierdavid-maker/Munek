@@ -496,11 +496,14 @@ export function HomePage() {
           </div>
           <div className="border-t border-white/5 mt-20 pt-10 flex flex-col md:flex-row justify-between items-center gap-6 text-[10px] text-white/20 uppercase tracking-[0.4em] font-black">
             <p>© {new Date().getFullYear()} MUÑEK SUPLEMENTOS. ÉLITE PERFORMANCE.</p>
-            <div className="flex gap-8">
-              <span>DESIGNED BY AI ÉLITE</span>
-              <span className="text-accent">|</span>
-              <span>MEXICO HQ</span>
-            </div>
+            <a 
+              href="https://www.codesolutionstudio.com.mx" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="text-white/20 hover:text-accent transition-colors"
+            >
+              designed for Code Solutions Studio
+            </a>
           </div>
         </div>
       </footer>
