@@ -10,6 +10,19 @@ export type Category =
   | 'Extras'
   | 'Hybrid Club'
 
+export const CATEGORY_OPTIONS: Category[] = [
+  'Proteína',
+  'Creatina',
+  'Pre-entreno',
+  'Aminoácidos',
+  'Ganador',
+  'Accesorios',
+  'Vitaminas',
+  'Minerales',
+  'Extras',
+  'Hybrid Club',
+]
+
 export type Variant = {
   id: string
   label: string

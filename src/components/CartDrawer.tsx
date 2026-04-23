@@ -6,6 +6,7 @@ import { formatMXN } from '../app/money'
 import type { Product, Variant } from '../app/catalog'
 import { GradientVisual } from './GradientVisual'
 import { LocalImage } from './LocalImage'
+import { FREE_SHIPPING_SUBTOTAL } from '../app/site'
 
 type Props = {
   open: boolean
@@ -34,6 +35,7 @@ export function CartDrawer({ open, onClose }: Props) {
     product: Product
     variant: Variant
   }>
+  const missingForFreeShipping = Math.max(0, FREE_SHIPPING_SUBTOTAL - cart.subtotal)
 
   return (
     <>
@@ -192,14 +194,14 @@ export function CartDrawer({ open, onClose }: Props) {
 
               {/* Free shipping message */}
               <div className="mb-8">
-                {cart.totalItems >= 4 ? (
+                {missingForFreeShipping === 0 ? (
                   <div className="flex items-center gap-3 text-accent text-[10px] font-black tracking-widest uppercase py-3 px-4 glass rounded-xl">
                     <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
                     STATUS: ENVÍO GRATIS ACTIVADO
                   </div>
                 ) : (
                   <div className="text-[10px] text-white/30 font-black tracking-widest uppercase p-4 glass rounded-xl leading-relaxed">
-                    Añade <span className="text-white">{4 - cart.totalItems} más</span> para desbloquear <span className="text-accent underline decoration-accent/30 decoration-2 underline-offset-4">LOGÍSTICA GRATUITA</span>
+                    Añade <span className="text-white">{formatMXN(missingForFreeShipping)}</span> más para desbloquear <span className="text-accent underline decoration-accent/30 decoration-2 underline-offset-4">LOGÍSTICA GRATUITA</span>
                   </div>
                 )}
               </div>

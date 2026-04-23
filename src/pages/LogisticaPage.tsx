@@ -1,4 +1,6 @@
 import { Link } from 'react-router-dom'
+import { formatMXN } from '../app/money'
+import { FREE_SHIPPING_SUBTOTAL, SHIPPING_COST } from '../app/site'
 import { useSeo } from '../hooks/useSeo'
 
 export function LogisticaPage() {
@@ -28,8 +30,8 @@ export function LogisticaPage() {
 
           <ul className="space-y-4 text-white/70 leading-relaxed">
             <li>Tiempo estimado de entrega: 24 a 72 horas hábiles en zonas urbanas.</li>
-            <li>Envío estándar: $150 MXN.</li>
-            <li>Envío gratis automático a partir de 4 artículos en carrito.</li>
+            <li>Envío estándar: {formatMXN(SHIPPING_COST)}.</li>
+            <li>Envío gratis automático en compras desde {formatMXN(FREE_SHIPPING_SUBTOTAL)}.</li>
             <li>Te compartimos guía de rastreo por WhatsApp o correo al despachar.</li>
           </ul>
         </section>

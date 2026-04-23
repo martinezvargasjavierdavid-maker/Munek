@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { DEFAULT_SOCIAL_IMAGE_PATH, SITE_URL } from '../app/site'
 
 type SeoOptions = {
   title: string
@@ -7,9 +8,6 @@ type SeoOptions = {
   robots?: string
   image?: string
 }
-
-const DEFAULT_SITE_URL = 'https://suplementosmunek.com'
-const DEFAULT_IMAGE_PATH = '/splementos.png'
 
 function upsertMetaByName(name: string, content: string) {
   let meta = document.querySelector(`meta[name="${name}"]`) as HTMLMetaElement | null
@@ -43,17 +41,17 @@ function upsertCanonical(href: string) {
 
 export function useSeo({ title, description, path, robots = 'index, follow', image }: SeoOptions) {
   useEffect(() => {
-    const siteUrl = (import.meta.env.VITE_SITE_URL as string | undefined)?.trim() || DEFAULT_SITE_URL
     const normalizedPath = path.startsWith('/') ? path : `/${path}`
-    const pageUrl = `${siteUrl}${normalizedPath}`
-    const imagePath = image || DEFAULT_IMAGE_PATH
-    const imageUrl = imagePath.startsWith('http') ? imagePath : `${siteUrl}${imagePath}`
+    const pageUrl = `${SITE_URL}${normalizedPath}`
+    const imagePath = image || DEFAULT_SOCIAL_IMAGE_PATH
+    const imageUrl = imagePath.startsWith('http') ? imagePath : `${SITE_URL}${imagePath}`
 
     document.title = title
     upsertMetaByName('description', description)
     upsertMetaByName('robots', robots)
 
     upsertMetaByProperty('og:type', 'website')
+    upsertMetaByProperty('og:site_name', 'MUNEK SUPLEMENTOS')
     upsertMetaByProperty('og:url', pageUrl)
     upsertMetaByProperty('og:title', title)
     upsertMetaByProperty('og:description', description)

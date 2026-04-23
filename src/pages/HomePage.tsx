@@ -8,20 +8,15 @@ import { SearchModal } from '../components/SearchModal'
 import { ProductCarousel } from '../components/ProductCarousel'
 import { useCart } from '../app/useCart'
 import { useCatalog } from '../app/useCatalog'
-import { type Category } from '../app/catalog'
+import { CATEGORY_OPTIONS, type Category } from '../app/catalog'
+import {
+  CONTACT_EMAIL,
+  CONTACT_PHONE_DISPLAY,
+  CONTACT_PHONE_TEL,
+  SOCIAL_LINKS,
+  WHATSAPP_NUMBER,
+} from '../app/site'
 import { useSeo } from '../hooks/useSeo'
-
-const CATEGORIES: Category[] = [
-  'Proteína',
-  'Creatina',
-  'Pre-entreno',
-  'Aminoácidos',
-  'Ganador',
-  'Vitaminas',
-  'Minerales',
-  'Extras',
-  'Hybrid Club',
-]
 
 const BANNER_IMAGES = [
   '/belcast.jpg',
@@ -46,7 +41,7 @@ export function HomePage() {
 
   const activeCategory = (() => {
     const category = searchParams.get('category') as Category | null
-    return category && CATEGORIES.includes(category) ? category : null
+    return category && CATEGORY_OPTIONS.includes(category) ? category : null
   })()
 
   const updateCategory = (category: Category | null) => {
@@ -76,7 +71,7 @@ export function HomePage() {
       <CategoryMenu
         open={menuOpen}
         onClose={() => setMenuOpen(false)}
-        categories={CATEGORIES}
+        categories={CATEGORY_OPTIONS}
         active={activeCategory}
         onSelect={(cat: Category | null) => {
           updateCategory(cat)
@@ -397,7 +392,7 @@ export function HomePage() {
               </p>
               <div className="space-y-6">
                 <a
-                  href="tel:2462094321"
+                  href={`tel:${CONTACT_PHONE_TEL}`}
                   className="flex items-center gap-4 group hover:text-accent transition-colors justify-center md:justify-start"
                 >
                   <div className="w-12 h-12 rounded-full border border-white/20 flex items-center justify-center group-hover:border-accent">
@@ -407,7 +402,7 @@ export function HomePage() {
                   </div>
                   <div>
                     <span className="block text-[10px] text-white/40 uppercase font-black">Llámanos</span>
-                    <span className="text-xl font-bold">246 209 4321</span>
+                    <span className="text-xl font-bold">{CONTACT_PHONE_DISPLAY}</span>
                   </div>
                 </a>
               </div>
@@ -435,7 +430,7 @@ export function HomePage() {
             <div>
               <h4 className="text-xs font-black mb-8 tracking-[0.3em] text-accent uppercase italic">Categorías</h4>
               <ul className="space-y-4 text-sm text-white/50 font-bold uppercase italic tracking-tight">
-                {CATEGORIES.map((cat) => (
+                {CATEGORY_OPTIONS.map((cat) => (
                   <li key={cat}>
                     <button
                       type="button"
@@ -464,9 +459,9 @@ export function HomePage() {
               <h4 className="text-xs font-black mb-8 tracking-[0.3em] text-accent uppercase italic">Contacto Directo</h4>
               <ul className="space-y-4 text-sm text-white/50 font-bold italic">
                 <li>
-                  <a href="mailto:elite@muneksuplementos.com" className="hover:text-white transition-colors flex items-center gap-2">
+                  <a href={`mailto:${CONTACT_EMAIL}`} className="hover:text-white transition-colors flex items-center gap-2">
                     <span className="w-1 h-px bg-accent/30" />
-                    elite@muneksuplementos.com
+                    {CONTACT_EMAIL}
                   </a>
                 </li>
                 <li className="flex items-center gap-2">
@@ -474,24 +469,24 @@ export function HomePage() {
                    Zacatelco, Tlaxcala - HQ
                 </li>
               </ul>
-              <div className="flex gap-4 mt-10">
-                {[
-                  { icon: 'Facebook', url: 'https://www.facebook.com/' },
-                  { icon: 'Instagram', url: 'https://www.instagram.com/' },
-                  { icon: 'TikTok', url: 'https://www.tiktok.com/' }
-                ].map((social) => (
+              {SOCIAL_LINKS.length > 0 && (
+                <div className="flex gap-4 mt-10">
+                  {SOCIAL_LINKS.map((social) => (
                   <a
-                    key={social.icon}
+                    key={social.id}
                     href={social.url}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="w-10 h-10 rounded-xl glass flex items-center justify-center transition-all hover:bg-accent hover:-translate-y-1 hover:shadow-[0_0_20px_var(--color-accent)]"
-                    aria-label={social.icon}
+                    aria-label={social.label}
                   >
-                    <div className="w-4 h-4 bg-white/40 rounded-sm" />
+                    <span className="text-[10px] font-black uppercase tracking-widest text-white/70">
+                      {social.label.slice(0, 2)}
+                    </span>
                   </a>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
           <div className="border-t border-white/5 mt-20 pt-10 flex flex-col md:flex-row justify-between items-center gap-6 text-[10px] text-white/20 uppercase tracking-[0.4em] font-black">
@@ -529,7 +524,7 @@ export function HomePage() {
 
       {/* WhatsApp Button */}
       <a
-        href="https://wa.me/522462094321"
+        href={`https://wa.me/${WHATSAPP_NUMBER}`}
         target="_blank"
         rel="noopener noreferrer"
         className="fixed bottom-6 right-6 z-40 w-14 h-14 bg-green-500 hover:bg-green-600 rounded-full flex items-center justify-center shadow-lg transition-colors"

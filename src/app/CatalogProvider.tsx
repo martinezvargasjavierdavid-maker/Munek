@@ -4,6 +4,7 @@ import { CatalogContext } from './CatalogContext'
 
 export function CatalogProvider({ children }: { children: React.ReactNode }) {
   const [products, setProducts] = useState<Product[]>(() => {
+    if (typeof window === 'undefined') return initialCatalog
     const saved = localStorage.getItem('munek_catalog')
     if (saved) {
       try {
@@ -17,7 +18,11 @@ export function CatalogProvider({ children }: { children: React.ReactNode }) {
   })
 
   useEffect(() => {
-    localStorage.setItem('munek_catalog', JSON.stringify(products))
+    try {
+      localStorage.setItem('munek_catalog', JSON.stringify(products))
+    } catch {
+      // ignore write failures to keep the storefront usable
+    }
   }, [products])
 
   const addProduct = (product: Product) => {
@@ -48,4 +53,3 @@ export function CatalogProvider({ children }: { children: React.ReactNode }) {
     </CatalogContext.Provider>
   )
 }
-

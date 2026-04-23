@@ -3,4 +3,4 @@ Allow: /
 Disallow: /admin
 Disallow: /checkout
 
-Sitemap: https://suplementosmunek.com/sitemap.xml
+Sitemap: https://muneksuplementos.com/sitemap.xml

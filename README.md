@@ -21,6 +21,8 @@ E‑commerce de suplementos con estética tipo “galería de arte” y un efect
 - Grid de productos curado (cards grandes, mucho aire)
 - Variantes reales (tamaños/sabores) y control de cantidad
 - Carrito en drawer con persistencia en `localStorage`
+- Configuración central de dominio, contacto, envíos y checkout en `src/app/site.ts`
+- Envío gratis por subtotal configurable (`VITE_FREE_SHIPPING_SUBTOTAL`)
 
 ## Preparado para Produccion Basica
 
@@ -28,6 +30,7 @@ E‑commerce de suplementos con estética tipo “galería de arte” y un efect
 - `public/robots.txt` con reglas para bloquear `/admin` y `/checkout`
 - `public/sitemap.xml` con URLs publicas principales
 - Fallback SPA para Netlify via `public/_redirects`
+- Ruta `/admin` deshabilitada por defecto; requiere activación explícita por env
 
 ## Despliegue y Enrutamiento SPA
 
@@ -46,6 +49,30 @@ Para evitar errores 404 al refrescar una ruta interna, debes configurar rewrite 
 - Registrar propiedad en Google Search Console
 - Enviar sitemap y solicitar indexacion de home + paginas legales
 - Validar que `/admin` y `/checkout` aparezcan con `noindex`
+
+## Variables de entorno
+
+Revisa `.env.example` para las variables soportadas. Las más importantes son:
+
+- `VITE_SITE_URL`
+- `VITE_FREE_SHIPPING_SUBTOTAL`
+- `VITE_SHIPPING_COST`
+- `VITE_CONTACT_EMAIL`
+- `VITE_CONTACT_PHONE_DISPLAY`
+- `VITE_CONTACT_PHONE`
+- `VITE_WHATSAPP_NUMBER`
+- `VITE_MERCADO_PAGO_LINK`
+- `VITE_STRIPE_LINK`
+
+### Admin
+
+El admin sigue siendo frontend-only. Aunque ahora está apagado por defecto, si decides activarlo con:
+
+- `VITE_ENABLE_ADMIN=true`
+- `VITE_ADMIN_EMAIL`
+- `VITE_ADMIN_PASSWORD`
+
+debes considerar que no ofrece seguridad real para producción. Lo correcto es moverlo a un backend o a un entorno privado.
 
 ## Branding
 

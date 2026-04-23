@@ -10,6 +10,7 @@ import { SearchModal } from '../components/SearchModal'
 import { GradientVisual } from '../components/GradientVisual'
 import { LocalImage } from '../components/LocalImage'
 import { useSeo } from '../hooks/useSeo'
+import { FREE_SHIPPING_SUBTOTAL } from '../app/site'
 
 export function ProductPage() {
   const { productId } = useParams<{ productId: string }>()
@@ -223,7 +224,7 @@ export function ProductPage() {
                 <svg className="w-5 h-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
-                <span>Envío gratis en pedidos mayores a $999</span>
+                <span>Envío gratis en pedidos desde {formatMXN(FREE_SHIPPING_SUBTOTAL)}</span>
               </div>
               <div className="flex items-center gap-3 text-sm">
                 <svg className="w-5 h-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">

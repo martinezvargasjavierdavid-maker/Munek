@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useCatalog } from '../app/useCatalog'
-import { type Category, type Product } from '../app/catalog'
+import { CATEGORY_OPTIONS, type Category, type Product } from '../app/catalog'
 import { formatMXN } from '../app/money'
 import { Navbar } from '../components/Navbar'
 import { useCart } from '../app/useCart'
@@ -9,29 +9,22 @@ import { GradientVisual } from '../components/GradientVisual'
 import { LocalImage } from '../components/LocalImage'
 import { saveImage, deleteImage as removeFromStorage } from '../app/imageStorage'
 import { useSeo } from '../hooks/useSeo'
+import { ADMIN_CONFIGURED, ADMIN_EMAIL, ADMIN_ENABLED, ADMIN_PASSWORD } from '../app/site'
+
+const ADMIN_SESSION_KEY = 'munek_admin_session'
 
 export function AdminPage() {
   const { products, addProduct, updateProduct, deleteProduct } = useCatalog()
   const cart = useCart()
 
-  // --- Authentication Logic ---
-  const ADMIN_EMAIL = 'martinezvargasjavierdavid@gmail.com'
-  const ADMIN_PASS = '+MuN3KK03J4VVa4+'
-
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const [checkingAuth, setCheckingAuth] = useState(true)
-
-  useEffect(() => {
-    const session = localStorage.getItem('munek_admin_session')
-    if (session === 'true') {
-      setIsLoggedIn(true)
-    }
-    setCheckingAuth(false)
-  }, [])
+  const [isLoggedIn, setIsLoggedIn] = useState(() => {
+    if (typeof window === 'undefined' || !ADMIN_CONFIGURED) return false
+    return localStorage.getItem(ADMIN_SESSION_KEY) === 'true'
+  })
 
   const handleLogin = (email: string, pass: string) => {
-    if (email === ADMIN_EMAIL && pass === ADMIN_PASS) {
-      localStorage.setItem('munek_admin_session', 'true')
+    if (email === ADMIN_EMAIL && pass === ADMIN_PASSWORD) {
+      localStorage.setItem(ADMIN_SESSION_KEY, 'true')
       setIsLoggedIn(true)
       return true
     }
@@ -39,7 +32,7 @@ export function AdminPage() {
   }
 
   const handleLogout = () => {
-    localStorage.removeItem('munek_admin_session')
+    localStorage.removeItem(ADMIN_SESSION_KEY)
     setIsLoggedIn(false)
   }
 
@@ -61,8 +54,8 @@ export function AdminPage() {
     robots: 'noindex, nofollow',
   })
 
-  // --- Conditional Returns (Must be AFTER all hooks) ---
-  if (checkingAuth) return null 
+  if (!ADMIN_ENABLED) return <AdminUnavailable />
+  if (!ADMIN_CONFIGURED) return <AdminNotConfigured />
   if (!isLoggedIn) return <AdminLogin onLogin={handleLogin} />
 
   // -----------------------------
@@ -211,14 +204,11 @@ export function AdminPage() {
                       title="Categoría del producto"
                       className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:border-accent focus:outline-none transition-all appearance-none text-white [&>option]:bg-zinc-900 [&>option]:text-white"
                     >
-                      <option value="Proteína">Proteína</option>
-                      <option value="Creatina">Creatina</option>
-                      <option value="Pre-entreno">Pre-entreno</option>
-                      <option value="Aminoácidos">Aminoácidos</option>
-                      <option value="Ganador">Ganador</option>
-                      <option value="Vitaminas">Vitaminas</option>
-                      <option value="Minerales">Minerales</option>
-                      <option value="Extras">Extras</option>
+                      {CATEGORY_OPTIONS.map((category) => (
+                        <option key={category} value={category}>
+                          {category}
+                        </option>
+                      ))}
                     </select>
                   </div>
                   <div>
@@ -251,7 +241,7 @@ export function AdminPage() {
                       type="button"
                       onClick={() => document.getElementById('image-upload')?.click()}
                       className={`p-4 rounded-xl border text-[10px] font-black uppercase tracking-widest transition-all ${
-                        formData.image?.kind === 'url' ? 'border-accent bg-accent/10 text-white' : 'border-white/5 glass text-white/40'
+                        formData.image?.kind === 'local' ? 'border-accent bg-accent/10 text-white' : 'border-white/5 glass text-white/40'
                       }`}
                     >
                       {optimizing ? 'Optimizando...' : 'Subir Imagen'}
@@ -489,6 +479,41 @@ export function AdminPage() {
     </div>
   )
 }
+
+function AdminUnavailable() {
+  return (
+    <div className="min-h-dvh bg-bg text-white flex items-center justify-center p-6">
+      <div className="glass max-w-lg rounded-3xl border border-white/10 p-8 text-center">
+        <p className="text-xs font-black tracking-[0.3em] uppercase text-accent mb-4">Acceso Cerrado</p>
+        <h1 className="text-3xl font-black uppercase italic tracking-tight mb-4">Admin deshabilitado</h1>
+        <p className="text-white/70 leading-relaxed mb-8">
+          El panel administrativo público quedó desactivado por seguridad. Si necesitas volver a usarlo, habilítalo explícitamente en variables de entorno y considera moverlo detrás de un backend o acceso privado.
+        </p>
+        <Link to="/" className="inline-flex items-center gap-2 rounded-xl bg-accent px-6 py-3 text-xs font-black uppercase tracking-widest text-white transition-colors hover:bg-accent/90">
+          Volver a la tienda
+        </Link>
+      </div>
+    </div>
+  )
+}
+
+function AdminNotConfigured() {
+  return (
+    <div className="min-h-dvh bg-bg text-white flex items-center justify-center p-6">
+      <div className="glass max-w-lg rounded-3xl border border-white/10 p-8 text-center">
+        <p className="text-xs font-black tracking-[0.3em] uppercase text-accent mb-4">Configuración Incompleta</p>
+        <h1 className="text-3xl font-black uppercase italic tracking-tight mb-4">Admin sin credenciales</h1>
+        <p className="text-white/70 leading-relaxed mb-8">
+          Activa `VITE_ENABLE_ADMIN=true` solo si también defines `VITE_ADMIN_EMAIL` y `VITE_ADMIN_PASSWORD`. Aun así, recuerda que un admin en frontend no ofrece seguridad real de producción.
+        </p>
+        <Link to="/" className="inline-flex items-center gap-2 rounded-xl bg-accent px-6 py-3 text-xs font-black uppercase tracking-widest text-white transition-colors hover:bg-accent/90">
+          Volver a la tienda
+        </Link>
+      </div>
+    </div>
+  )
+}
+
 function AdminLogin({ onLogin }: { onLogin: (e: string, p: string) => boolean }) {
   const [email, setEmail] = useState('')
   const [pass, setPass] = useState('')

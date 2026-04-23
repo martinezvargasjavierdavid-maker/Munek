@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { CONTACT_EMAIL } from '../app/site'
 import { useSeo } from '../hooks/useSeo'
 
 export function PrivacidadPage() {
@@ -26,7 +27,7 @@ export function PrivacidadPage() {
             <p>Recopilamos datos de contacto y entrega únicamente para procesar tus pedidos, confirmar pagos y brindar soporte postventa.</p>
             <p>No comercializamos ni compartimos tu información personal con terceros ajenos al proceso logístico y de pago.</p>
             <p>Protegemos tus datos con medidas administrativas y técnicas razonables para evitar accesos no autorizados.</p>
-            <p>Puedes solicitar corrección o eliminación de tus datos enviando un correo a elite@muneksuplementos.com.</p>
+            <p>Puedes solicitar corrección o eliminación de tus datos enviando un correo a {CONTACT_EMAIL}.</p>
           </div>
         </section>
       </div>

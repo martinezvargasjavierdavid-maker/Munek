@@ -9,13 +9,13 @@ import { CategoryMenu } from '../components/CategoryMenu'
 import { SearchModal } from '../components/SearchModal'
 import type { Product, Variant } from '../app/catalog'
 import { useSeo } from '../hooks/useSeo'
-
-// Configuración - Edita estos valores para tu negocio
-const WHATSAPP_NUMBER = '522462094321' // Número de WhatsApp (con código de país)
-const MERCADO_PAGO_LINK = '' // Ej: 'https://mpago.la/tu-link' o déjalo vacío
-const STRIPE_LINK = '' // Ej: 'https://buy.stripe.com/tu-link' o déjalo vacío
-const FREE_SHIPPING_ITEMS_THRESHOLD = 4 // Envío gratis a partir de esta cantidad de productos
-const SHIPPING_COST = 150 // Costo de envío
+import {
+  FREE_SHIPPING_SUBTOTAL,
+  MERCADO_PAGO_LINK,
+  SHIPPING_COST,
+  STRIPE_LINK,
+  WHATSAPP_NUMBER,
+} from '../app/site'
 
 export function CheckoutPage() {
   const cart = useCart()
@@ -49,7 +49,7 @@ export function CheckoutPage() {
     variant: Variant
   }>
 
-  const shipping = cart.totalItems >= FREE_SHIPPING_ITEMS_THRESHOLD ? 0 : SHIPPING_COST
+  const shipping = cart.subtotal >= FREE_SHIPPING_SUBTOTAL ? 0 : SHIPPING_COST
   const total = cart.subtotal + shipping
 
   useSeo({
@@ -98,13 +98,13 @@ export function CheckoutPage() {
       message += `*¡Sigue rompiendo tus limites!*`
 
       const encodedMessage = encodeURIComponent(message)
-      window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`, '_blank')
+      window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`, '_blank', 'noopener,noreferrer')
 
     } else if (paymentMethod === 'mercadopago' && MERCADO_PAGO_LINK) {
-      window.open(MERCADO_PAGO_LINK, '_blank')
+      window.open(MERCADO_PAGO_LINK, '_blank', 'noopener,noreferrer')
 
     } else if (paymentMethod === 'stripe' && STRIPE_LINK) {
-      window.open(STRIPE_LINK, '_blank')
+      window.open(STRIPE_LINK, '_blank', 'noopener,noreferrer')
     }
   }
 
@@ -381,7 +381,7 @@ export function CheckoutPage() {
                 </div>
                 {shipping > 0 && (
                   <p className="text-xs text-muted">
-                    Envío gratis en pedidos de {FREE_SHIPPING_ITEMS_THRESHOLD} productos o más
+                    Envío gratis en compras desde {formatMXN(FREE_SHIPPING_SUBTOTAL)}
                   </p>
                 )}
               </div>
