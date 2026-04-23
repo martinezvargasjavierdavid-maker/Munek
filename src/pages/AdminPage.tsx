@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useCatalog } from '../app/useCatalog'
 import { type Category, type Product } from '../app/catalog'
@@ -6,12 +6,44 @@ import { formatMXN } from '../app/money'
 import { Navbar } from '../components/Navbar'
 import { useCart } from '../app/useCart'
 import { GradientVisual } from '../components/GradientVisual'
+import { LocalImage } from '../components/LocalImage'
+import { saveImage, deleteImage as removeFromStorage } from '../app/imageStorage'
 import { useSeo } from '../hooks/useSeo'
 
 export function AdminPage() {
   const { products, addProduct, updateProduct, deleteProduct } = useCatalog()
   const cart = useCart()
-  
+
+  // --- Authentication Logic ---
+  const ADMIN_EMAIL = 'martinezvargasjavierdavid@gmail.com'
+  const ADMIN_PASS = '+MuN3KK03J4VVa4+'
+
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [checkingAuth, setCheckingAuth] = useState(true)
+
+  useEffect(() => {
+    const session = localStorage.getItem('munek_admin_session')
+    if (session === 'true') {
+      setIsLoggedIn(true)
+    }
+    setCheckingAuth(false)
+  }, [])
+
+  const handleLogin = (email: string, pass: string) => {
+    if (email === ADMIN_EMAIL && pass === ADMIN_PASS) {
+      localStorage.setItem('munek_admin_session', 'true')
+      setIsLoggedIn(true)
+      return true
+    }
+    return false
+  }
+
+  const handleLogout = () => {
+    localStorage.removeItem('munek_admin_session')
+    setIsLoggedIn(false)
+  }
+
+  // --- Admin Logic State (Must be top-level for Hooks consistency) ---
   const [editingId, setEditingId] = useState<string | null>(null)
   const [formData, setFormData] = useState<Partial<Product>>({
     name: '',
@@ -20,7 +52,21 @@ export function AdminPage() {
     description: '',
     variants: [{ id: '', label: '', size: '', flavor: '', price: 0, inStock: true }]
   })
+  const [optimizing, setOptimizing] = useState(false)
 
+  useSeo({
+    title: 'Admin | MUNEK SUPLEMENTOS',
+    description: 'Panel administrativo interno de MUNEK SUPLEMENTOS.',
+    path: '/admin',
+    robots: 'noindex, nofollow',
+  })
+
+  // --- Conditional Returns (Must be AFTER all hooks) ---
+  if (checkingAuth) return null 
+  if (!isLoggedIn) return <AdminLogin onLogin={handleLogin} />
+
+  // -----------------------------
+  
   const resetForm = () => {
     setEditingId(null)
     setFormData({
@@ -38,29 +84,20 @@ export function AdminPage() {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  const [optimizing, setOptimizing] = useState(false)
   const currentGradient = formData.image?.kind === 'gradient' ? formData.image : null
-
-  useSeo({
-    title: 'Admin | MUNEK SUPLEMENTOS',
-    description: 'Panel administrativo interno de MUNEK SUPLEMENTOS.',
-    path: '/admin',
-    robots: 'noindex, nofollow',
-  })
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
-
     setOptimizing(true)
     const reader = new FileReader()
     reader.onload = (event) => {
       const img = new Image()
-      img.onload = () => {
+      img.onload = async () => {
         const canvas = document.createElement('canvas')
         let width = img.width
         let height = img.height
-        const max = 800
+        const max = 1200 // Increased quality slightly since we are in IDB
 
         if (width > height) {
           if (width > max) {
@@ -79,9 +116,15 @@ export function AdminPage() {
         const ctx = canvas.getContext('2d')
         ctx?.drawImage(img, 0, 0, width, height)
         
-        const optimizedBase64 = canvas.toDataURL('image/jpeg', 0.7)
-        setFormData({ ...formData, image: { kind: 'url', url: optimizedBase64 } })
-        setOptimizing(false)
+        // Convert to Blob for IndexedDB instead of Base64 URL
+        canvas.toBlob(async (blob) => {
+          if (blob) {
+            const imageId = `local-${Date.now()}`
+            await saveImage(imageId, blob)
+            setFormData({ ...formData, image: { kind: 'local', id: imageId } })
+          }
+          setOptimizing(false)
+        }, 'image/jpeg', 0.8)
       }
       img.src = event.target?.result as string
     }
@@ -124,9 +167,17 @@ export function AdminPage() {
             <span className="text-accent text-[10px] font-black tracking-[0.4em] uppercase italic mb-2 block">Panel de Control</span>
             <h1 className="text-4xl md:text-6xl font-black uppercase italic tracking-tighter">Gestión de <span className="text-accent">Inventario</span></h1>
           </div>
-          <Link to="/" className="glass px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-white/10 transition-all">
-            Volver a la Tienda
-          </Link>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={handleLogout}
+              className="px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest text-white/40 hover:text-red-500 hover:bg-red-500/10 transition-all border border-white/5"
+            >
+              Cerrar Sesión
+            </button>
+            <Link to="/" className="glass px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-white/10 transition-all">
+              Volver a la Tienda
+            </Link>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
@@ -215,11 +266,15 @@ export function AdminPage() {
                     />
                   </div>
 
-                  {formData.image?.kind === 'url' && (
+                  {(formData.image?.kind === 'url' || formData.image?.kind === 'local') && (
                     <div className="relative aspect-square rounded-2xl overflow-hidden glass border border-white/10 group">
-                      <img src={formData.image.url} className="w-full h-full object-cover" alt="Preview" />
+                      {formData.image.kind === 'url' ? (
+                        <img src={formData.image.url} className="w-full h-full object-cover" alt="Preview" />
+                      ) : (
+                        <LocalImage id={formData.image.id} className="w-full h-full object-cover" />
+                      )}
                       <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <span className="text-[10px] font-black uppercase tracking-widest">Imagen Optimizada</span>
+                        <span className="text-[10px] font-black uppercase tracking-widest text-white">Imagen Preparada</span>
                       </div>
                     </div>
                   )}
@@ -382,6 +437,7 @@ export function AdminPage() {
                   <div className="flex items-center gap-6">
                     <div className="w-16 h-16 rounded-xl shrink-0 shadow-lg overflow-hidden relative">
                       {p.image.kind === 'url' && <img src={p.image.url} className="w-full h-full object-cover" alt={p.name} />}
+                      {p.image.kind === 'local' && <LocalImage id={p.image.id} className="w-full h-full object-cover" alt={p.name} />}
                       {p.image.kind === 'gradient' && <GradientVisual a={p.image.a} b={p.image.b} className="absolute inset-0 h-full w-full" />}
                     </div>
                     <div>
@@ -408,8 +464,13 @@ export function AdminPage() {
                       </svg>
                     </button>
                     <button
-                      onClick={() => {
-                        if(confirm('¿Seguro que quieres eliminar este producto?')) deleteProduct(p.id)
+                      onClick={async () => {
+                        if (confirm('¿Seguro que quieres eliminar este producto?')) {
+                          if (p.image.kind === 'local') {
+                            await removeFromStorage(p.image.id)
+                          }
+                          deleteProduct(p.id)
+                        }
                       }}
                       className="p-3 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-500 transition-all"
                       title="Eliminar"
@@ -425,6 +486,99 @@ export function AdminPage() {
           </div>
         </div>
       </main>
+    </div>
+  )
+}
+function AdminLogin({ onLogin }: { onLogin: (e: string, p: string) => boolean }) {
+  const [email, setEmail] = useState('')
+  const [pass, setPass] = useState('')
+  const [error, setError] = useState(false)
+  const [loading, setLoading] = useState(false)
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+    setError(false)
+
+    // Simulate a tiny delay for "premium" feel
+    setTimeout(() => {
+      const success = onLogin(email, pass)
+      if (!success) {
+        setError(true)
+        setLoading(false)
+      }
+    }, 800)
+  }
+
+  return (
+    <div className="min-h-dvh bg-bg text-white flex items-center justify-center p-6 relative overflow-hidden">
+      {/* Decorative Gradients */}
+      <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-accent/10 blur-[120px] rounded-full rotate-12" />
+      <div className="absolute bottom-[-10%] right-[-5%] w-[40%] h-[40%] bg-accent/5 blur-[100px] rounded-full" />
+
+      <div className="w-full max-w-md relative z-10">
+        <div className="text-center mb-12">
+          <div className="glass w-24 h-24 rounded-3xl mx-auto flex items-center justify-center mb-8 shadow-premium group">
+            <img src="/splementos.png" alt="Muñek" className="w-16 h-16 object-contain grayscale group-hover:grayscale-0 transition-all duration-700" />
+          </div>
+          <span className="text-accent text-[10px] font-black tracking-[0.5em] uppercase italic block mb-3">Acceso Restringido</span>
+          <h1 className="text-4xl font-black uppercase italic tracking-tighter">MUNËK <span className="text-accent">ADMIN</span></h1>
+        </div>
+
+        <form onSubmit={handleSubmit} className="glass p-8 rounded-3xl border border-white/5 space-y-6 shadow-2xl">
+          <div>
+            <label className="block text-[10px] font-black uppercase tracking-widest text-white/30 mb-2 ml-1">Email de Usuario</label>
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => { setEmail(e.target.value); setError(false); }}
+              placeholder="admin@munek.com"
+              className={`w-full bg-white/5 border ${error ? 'border-red-500/50' : 'border-white/10'} rounded-xl px-5 py-4 focus:border-accent focus:outline-none transition-all placeholder:text-white/10`}
+            />
+          </div>
+
+          <div>
+            <label className="block text-[10px] font-black uppercase tracking-widest text-white/30 mb-2 ml-1">Contraseña</label>
+            <input
+              type="password"
+              required
+              value={pass}
+              onChange={(e) => { setPass(e.target.value); setError(false); }}
+              placeholder="••••••••••••"
+              className={`w-full bg-white/5 border ${error ? 'border-red-500/50' : 'border-white/10'} rounded-xl px-5 py-4 focus:border-accent focus:outline-none transition-all placeholder:text-white/10`}
+            />
+          </div>
+
+          {error && (
+            <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 text-center">
+              <p className="text-red-500 text-[10px] font-black uppercase tracking-widest">Credenciales Incorrectas</p>
+            </div>
+          )}
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-accent hover:bg-accent/80 disabled:bg-accent/40 text-white font-black uppercase italic tracking-[0.2em] py-5 rounded-xl transition-all shadow-premium hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-3"
+          >
+            {loading ? (
+              <>
+                <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span>Autenticando...</span>
+              </>
+            ) : (
+              'Entrar al Panel'
+            )}
+          </button>
+
+          <Link to="/" className="block text-center text-[10px] font-black uppercase tracking-widest text-white/20 hover:text-white/40 transition-colors pt-4">
+            ← Volver a la Tienda
+          </Link>
+        </form>
+      </div>
     </div>
   )
 }

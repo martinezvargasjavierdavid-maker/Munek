@@ -30,6 +30,7 @@ export type Product = {
   image: 
     | { kind: 'gradient'; a: string; b: string }
     | { kind: 'url'; url: string }
+    | { kind: 'local'; id: string }
   variants: Variant[]
 }
 

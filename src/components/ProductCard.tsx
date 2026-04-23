@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import type { Product } from '../app/catalog'
 import { formatMXN } from '../app/money'
 import { GradientVisual } from './GradientVisual'
+import { LocalImage } from './LocalImage'
 
 type Props = {
   product: Product
@@ -33,11 +34,14 @@ export function ProductCard({ product, onAdd }: Props) {
       id={`product-${product.id}`}
       className="group bg-zinc-900/50 rounded-radius-premium overflow-hidden border border-hairline hover:shadow-premium transition-all duration-500 hover:-translate-y-1"
     >
-      {/* Image area with gradient or URL */}
+      {/* Image area with gradient, URL or Local */}
       <Link to={`/producto/${product.id}`} className="block">
         <div className="relative aspect-square overflow-hidden">
           {product.image.kind === 'url' && (
-            <img src={product.image.url} className="w-full h-full object-cover" alt={product.name} />
+            <img src={product.image.url} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" alt={product.name} />
+          )}
+          {product.image.kind === 'local' && (
+            <LocalImage id={product.image.id} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" alt={product.name} />
           )}
           {product.image.kind === 'gradient' && (
             <GradientVisual a={product.image.a} b={product.image.b} className="absolute inset-0 h-full w-full" />

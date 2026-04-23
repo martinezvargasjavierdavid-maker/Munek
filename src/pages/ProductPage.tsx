@@ -8,6 +8,7 @@ import { Navbar } from '../components/Navbar'
 import { CategoryMenu } from '../components/CategoryMenu'
 import { SearchModal } from '../components/SearchModal'
 import { GradientVisual } from '../components/GradientVisual'
+import { LocalImage } from '../components/LocalImage'
 import { useSeo } from '../hooks/useSeo'
 
 export function ProductPage() {
@@ -103,9 +104,13 @@ export function ProductPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           {/* Product Image */}
           <div className="aspect-square rounded-premium overflow-hidden glass flex items-center justify-center relative shadow-premium group">
-            {product.image.kind === 'url' ? (
+            {product.image.kind === 'url' && (
               <img src={product.image.url} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt={product.name} />
-            ) : (
+            )}
+            {product.image.kind === 'local' && (
+              <LocalImage id={product.image.id} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt={product.name} />
+            )}
+            {product.image.kind === 'gradient' && (
               <>
                 <GradientVisual a={product.image.a} b={product.image.b} className="absolute inset-0 h-full w-full" />
                 <div className="absolute inset-0 bg-linear-to-br from-white/5 to-transparent opacity-50" />
