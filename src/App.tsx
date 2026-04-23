@@ -1,4 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { Analytics } from '@vercel/analytics/react'
+import { SpeedInsights } from '@vercel/speed-insights/react'
 import { CartProvider } from './app/cart'
 import { CatalogProvider } from './app/CatalogProvider'
 import { HomePage } from './pages/HomePage'
@@ -29,6 +31,8 @@ export default function App() {
             <Route path="/privacidad" element={<PrivacidadPage />} />
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
+          <Analytics />
+          <SpeedInsights />
         </CartProvider>
       </CatalogProvider>
     </BrowserRouter>
