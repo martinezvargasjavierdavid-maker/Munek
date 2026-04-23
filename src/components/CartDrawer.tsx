@@ -5,6 +5,7 @@ import { useCart } from '../app/useCart'
 import { formatMXN } from '../app/money'
 import type { Product, Variant } from '../app/catalog'
 import { GradientVisual } from './GradientVisual'
+import { LocalImage } from './LocalImage'
 
 type Props = {
   open: boolean
@@ -106,9 +107,13 @@ export function CartDrawer({ open, onClose }: Props) {
 
                     {/* Product visual placeholder */}
                     <div className="w-24 h-24 rounded-xl shrink-0 glass overflow-hidden flex items-center justify-center text-[10px] font-black italic tracking-widest text-white/10 relative">
-                      {l.product.image.kind === 'url' ? (
+                      {l.product.image.kind === 'url' && (
                         <img src={l.product.image.url} className="w-full h-full object-cover" alt={l.product.name} />
-                      ) : (
+                      )}
+                      {l.product.image.kind === 'local' && (
+                        <LocalImage id={l.product.image.id} className="w-full h-full object-cover" alt={l.product.name} />
+                      )}
+                      {l.product.image.kind === 'gradient' && (
                         <GradientVisual a={l.product.image.a} b={l.product.image.b} className="absolute inset-0 h-full w-full" />
                       )}
                     </div>
