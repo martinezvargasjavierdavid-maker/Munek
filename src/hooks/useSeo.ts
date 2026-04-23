@@ -8,7 +8,7 @@ type SeoOptions = {
   image?: string
 }
 
-const DEFAULT_SITE_URL = 'https://muneksuplementos.com'
+const DEFAULT_SITE_URL = 'https://suplementosmunek.com'
 const DEFAULT_IMAGE_PATH = '/splementos.png'
 
 function upsertMetaByName(name: string, content: string) {
