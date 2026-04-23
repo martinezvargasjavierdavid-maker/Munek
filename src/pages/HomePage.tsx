@@ -332,7 +332,7 @@ export function HomePage() {
                 <ul className="text-sm space-y-2 text-white/80">
                   <li className="flex justify-between border-b border-white/5 pb-2">
                     <span>Lunes a Viernes</span>
-                    <span className="font-bold">11:00 am - 8:00 pm</span>
+                    <span className="font-bold">10:00 am - 8:00 pm</span>
                   </li>
                   <li className="flex justify-between border-b border-white/5 pb-2">
                     <span>Sábados</span>
@@ -369,11 +369,11 @@ export function HomePage() {
                 <ul className="text-sm space-y-2 text-white/80">
                   <li className="flex justify-between border-b border-white/5 pb-2">
                     <span>Lunes a Viernes</span>
-                    <span className="font-bold">11:00 am - 8:00 pm</span>
+                    <span className="font-bold">10:00 am - 6:00 pm</span>
                   </li>
                   <li className="flex justify-between border-b border-white/5 pb-2">
                     <span>Sábados</span>
-                    <span className="font-bold">12:00 pm - 8:00 pm</span>
+                    <span className="font-bold">10:00 am - 3:00 pm</span>
                   </li>
                   <li className="flex justify-between">
                     <span>Domingos</span>
