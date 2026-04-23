@@ -134,6 +134,18 @@ function extractLocalImageIds(images: ProductImage[]) {
     .map((image) => image.id)
 }
 
+function isLocalImageStillReferenced(
+  products: Product[],
+  imageId: string,
+  excludedProductIds: string[] = [],
+) {
+  return products.some(
+    (product) =>
+      !excludedProductIds.includes(product.id) &&
+      extractLocalImageIds(product.images).includes(imageId),
+  )
+}
+
 async function optimizeAndSaveImage(file: File): Promise<ProductImage> {
   const dataUrl = await new Promise<string>((resolve, reject) => {
     const reader = new FileReader()
@@ -287,7 +299,11 @@ export function AdminPage() {
 
       await Promise.all(
         previousLocalIds
-          .filter((imageId) => !nextLocalIds.has(imageId))
+          .filter(
+            (imageId) =>
+              !nextLocalIds.has(imageId) &&
+              !isLocalImageStillReferenced(products, imageId, [previousProduct.id]),
+          )
           .map((imageId) => removeFromStorage(imageId)),
       )
 
@@ -299,13 +315,13 @@ export function AdminPage() {
     resetForm()
   }
 
-  const startRelatedVariantDraft = () => {
+  const startRelatedVariantDraft = (copyImages: boolean) => {
     const nextGroupId = formData.groupId.trim() || editingId || `g-${Date.now()}`
     setEditingId(null)
     setFormData((prev) => ({
       ...prev,
       groupId: nextGroupId,
-      images: [createDefaultProductImage()],
+      images: copyImages ? prev.images.map((image) => ({ ...image })) : [createDefaultProductImage()],
       variant: createEmptyVariantDraft(),
     }))
     window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -444,10 +460,10 @@ export function AdminPage() {
                   <div className="flex items-center justify-between gap-4">
                     <div>
                       <h3 className="text-xs font-black uppercase tracking-[0.2em] text-accent italic">
-                        Carrusel del Producto
+                        Carrusel de Esta Variante
                       </h3>
                       <p className="text-xs text-white/40 mt-2">
-                        Puedes cargar hasta {MAX_PRODUCT_IMAGES} imágenes por producto.
+                        Cada variante puede tener hasta {MAX_PRODUCT_IMAGES} imágenes propias.
                       </p>
                     </div>
                     <div className="flex gap-3">
@@ -530,13 +546,22 @@ export function AdminPage() {
                         Cada variante se guarda como un producto separado con su propio carrusel.
                       </p>
                     </div>
-                    <button
-                      type="button"
-                      onClick={startRelatedVariantDraft}
-                      className="px-4 py-2 bg-accent/10 border border-accent/20 rounded-xl text-[10px] font-black uppercase tracking-widest text-accent hover:bg-accent/20 transition-all"
-                    >
-                      + Nueva Variante Separada
-                    </button>
+                    <div className="flex flex-wrap gap-3">
+                      <button
+                        type="button"
+                        onClick={() => startRelatedVariantDraft(false)}
+                        className="px-4 py-2 bg-accent/10 border border-accent/20 rounded-xl text-[10px] font-black uppercase tracking-widest text-accent hover:bg-accent/20 transition-all"
+                      >
+                        + Variante con Imágenes Nuevas
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => startRelatedVariantDraft(true)}
+                        className="px-4 py-2 glass rounded-xl text-[10px] font-black uppercase tracking-widest text-white/60 hover:text-white transition-all"
+                      >
+                        + Variante con Mismas Imágenes
+                      </button>
+                    </div>
                   </div>
 
                   {relatedCount > 0 && (
@@ -759,9 +784,12 @@ export function AdminPage() {
                         onClick={async () => {
                           if (confirm('¿Seguro que quieres eliminar este producto?')) {
                             await Promise.all(
-                              extractLocalImageIds(product.images).map((imageId) =>
-                                removeFromStorage(imageId),
-                              ),
+                              extractLocalImageIds(product.images)
+                                .filter(
+                                  (imageId) =>
+                                    !isLocalImageStillReferenced(products, imageId, [product.id]),
+                                )
+                                .map((imageId) => removeFromStorage(imageId)),
                             )
                             deleteProduct(product.id)
                             if (editingId === product.id) resetForm()
