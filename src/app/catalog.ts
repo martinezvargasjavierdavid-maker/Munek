@@ -23,6 +23,11 @@ export const CATEGORY_OPTIONS: Category[] = [
   'Hybrid Club',
 ]
 
+export type ProductImage =
+  | { kind: 'gradient'; a: string; b: string }
+  | { kind: 'url'; url: string }
+  | { kind: 'local'; id: string }
+
 export type Variant = {
   id: string
   label: string
@@ -35,21 +40,212 @@ export type Variant = {
 
 export type Product = {
   id: string
+  groupId: string
   name: string
   brand: string
   category: Category
   description: string
   tags?: string[]
-  image: 
-    | { kind: 'gradient'; a: string; b: string }
-    | { kind: 'url'; url: string }
-    | { kind: 'local'; id: string }
-  variants: Variant[]
+  images: ProductImage[]
+  variant: Variant
+}
+
+type LegacyProduct = {
+  id: string
+  groupId?: string
+  name: string
+  brand: string
+  category: Category
+  description: string
+  tags?: string[]
+  image?: ProductImage
+  images?: ProductImage[]
+  variant?: Partial<Variant>
+  variants?: Partial<Variant>[]
+}
+
+export const MAX_PRODUCT_IMAGES = 4
+
+export function createDefaultProductImage(): ProductImage {
+  return { kind: 'gradient', a: '#d10b1c', b: '#0b0b0c' }
+}
+
+function isCategory(value: unknown): value is Category {
+  return typeof value === 'string' && CATEGORY_OPTIONS.includes(value as Category)
+}
+
+function normalizeCategory(value: unknown): Category {
+  return isCategory(value) ? value : 'Extras'
+}
+
+function normalizeString(value: unknown) {
+  return typeof value === 'string' ? value.trim() : ''
+}
+
+function normalizeNumber(value: unknown, fallback = 0) {
+  const parsed = Number(value)
+  return Number.isFinite(parsed) ? parsed : fallback
+}
+
+function normalizeTags(value: unknown) {
+  if (!Array.isArray(value)) return undefined
+  const tags = value
+    .map((tag) => normalizeString(tag))
+    .filter(Boolean)
+  return tags.length > 0 ? tags : undefined
+}
+
+function normalizeImage(rawImage: unknown): ProductImage | null {
+  if (!rawImage || typeof rawImage !== 'object') return null
+
+  const image = rawImage as Partial<ProductImage>
+
+  if (image.kind === 'gradient') {
+    const a = normalizeString(image.a)
+    const b = normalizeString(image.b)
+    if (a && b) return { kind: 'gradient', a, b }
+  }
+
+  if (image.kind === 'url') {
+    const url = normalizeString(image.url)
+    if (url) return { kind: 'url', url }
+  }
+
+  if (image.kind === 'local') {
+    const id = normalizeString(image.id)
+    if (id) return { kind: 'local', id }
+  }
+
+  return null
+}
+
+export function normalizeProductImages(
+  rawImages: unknown,
+  rawImage?: unknown,
+): ProductImage[] {
+  const imagesFromArray = Array.isArray(rawImages)
+    ? rawImages.map((image) => normalizeImage(image)).filter(Boolean)
+    : []
+
+  if (imagesFromArray.length > 0) {
+    return imagesFromArray.slice(0, MAX_PRODUCT_IMAGES) as ProductImage[]
+  }
+
+  const singleImage = normalizeImage(rawImage)
+  return [singleImage ?? createDefaultProductImage()]
+}
+
+export function buildVariantLabel(input: {
+  label?: string
+  size?: string
+  flavor?: string
+}) {
+  const explicitLabel = normalizeString(input.label)
+  if (explicitLabel) return explicitLabel
+
+  const size = normalizeString(input.size)
+  const flavor = normalizeString(input.flavor)
+  const parts = [size, flavor].filter(Boolean)
+
+  return parts.join(' • ') || 'Presentación estándar'
+}
+
+function normalizeVariant(rawVariant: unknown, fallbackId: string): Variant {
+  const variant = (rawVariant ?? {}) as Partial<Variant>
+  const size = normalizeString(variant.size)
+  const flavor = normalizeString(variant.flavor) || undefined
+  const price = Math.max(0, normalizeNumber(variant.price))
+  const compareAt = normalizeNumber(variant.compareAt)
+
+  return {
+    id: normalizeString(variant.id) || fallbackId,
+    label: buildVariantLabel({ label: variant.label, size, flavor }),
+    size,
+    flavor,
+    price,
+    compareAt: compareAt > price ? compareAt : undefined,
+    inStock: typeof variant.inStock === 'boolean' ? variant.inStock : true,
+  }
+}
+
+function normalizeNewProduct(rawProduct: LegacyProduct, fallbackIndex: number): Product {
+  const productId = normalizeString(rawProduct.id) || `product-${fallbackIndex + 1}`
+  const variant = normalizeVariant(
+    rawProduct.variant,
+    `${productId}-variant`,
+  )
+
+  return {
+    id: productId,
+    groupId: normalizeString(rawProduct.groupId) || productId,
+    name: normalizeString(rawProduct.name),
+    brand: normalizeString(rawProduct.brand),
+    category: normalizeCategory(rawProduct.category),
+    description: normalizeString(rawProduct.description),
+    tags: normalizeTags(rawProduct.tags),
+    images: normalizeProductImages(rawProduct.images, rawProduct.image),
+    variant,
+  }
+}
+
+function flattenLegacyProduct(rawProduct: LegacyProduct, fallbackIndex: number): Product[] {
+  const baseId = normalizeString(rawProduct.id) || `product-${fallbackIndex + 1}`
+  const groupId = normalizeString(rawProduct.groupId) || baseId
+  const variants = Array.isArray(rawProduct.variants) ? rawProduct.variants : []
+
+  if (variants.length === 0) {
+    return [normalizeNewProduct(rawProduct, fallbackIndex)]
+  }
+
+  return variants.map((rawVariant, variantIndex) => {
+    const variant = normalizeVariant(
+      rawVariant,
+      `${baseId}-variant-${variantIndex + 1}`,
+    )
+
+    return {
+      id: variants.length === 1 ? baseId : `${groupId}__${variant.id}`,
+      groupId,
+      name: normalizeString(rawProduct.name),
+      brand: normalizeString(rawProduct.brand),
+      category: normalizeCategory(rawProduct.category),
+      description: normalizeString(rawProduct.description),
+      tags: normalizeTags(rawProduct.tags),
+      images: normalizeProductImages(rawProduct.images, rawProduct.image),
+      variant,
+    }
+  })
+}
+
+export function normalizeCatalog(rawProducts: unknown): Product[] {
+  if (!Array.isArray(rawProducts)) return []
+
+  const normalizedProducts = rawProducts.flatMap((rawProduct, index) => {
+    if (!rawProduct || typeof rawProduct !== 'object') return []
+
+    const candidate = rawProduct as LegacyProduct
+    if ('variant' in candidate) {
+      return [normalizeNewProduct(candidate, index)]
+    }
+
+    return flattenLegacyProduct(candidate, index)
+  })
+
+  const deduped = new Map<string, Product>()
+  normalizedProducts.forEach((product) => {
+    deduped.set(product.id, product)
+  })
+
+  return [...deduped.values()]
+}
+
+export function getProductPrimaryImage(product: Product) {
+  return product.images[0] ?? createDefaultProductImage()
 }
 
 const g = (a: string, b: string) => ({ kind: 'gradient' as const, a, b })
 
-export const catalog: Product[] = [
+const legacyCatalog: LegacyProduct[] = [
   {
     id: 'p-crea-01',
     name: 'Creatina Monohidratada Micronizada',
@@ -222,14 +418,14 @@ export const catalog: Product[] = [
   },
 ]
 
+export const catalog: Product[] = normalizeCatalog(legacyCatalog)
+
 export type CatalogLookup = {
   byVariantId: Record<string, { product: Product; variant: Variant }>
 }
 
 export const catalogLookup: CatalogLookup = {
   byVariantId: Object.fromEntries(
-    catalog.flatMap((product) =>
-      product.variants.map((variant) => [variant.id, { product, variant }]),
-    ),
+    catalog.map((product) => [product.variant.id, { product, variant: product.variant }]),
   ),
 }

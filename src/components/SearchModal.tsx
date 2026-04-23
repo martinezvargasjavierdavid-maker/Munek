@@ -1,9 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
-import { type Product } from '../app/catalog'
+import { getProductPrimaryImage, type Product } from '../app/catalog'
 import { useCatalog } from '../app/useCatalog'
 import { formatMXN } from '../app/money'
-import { GradientVisual } from './GradientVisual'
-import { LocalImage } from './LocalImage'
+import { ProductImageView } from './ProductImageView'
 
 type Props = {
   open: boolean
@@ -129,21 +128,17 @@ export function SearchModal({ open, onClose, onSelectProduct }: Props) {
                     className="w-full flex items-center gap-4 p-3 rounded-xl hover:bg-white/10 transition-colors text-left"
                   >
                     <div className="w-14 h-14 rounded-lg shrink-0 overflow-hidden flex items-center justify-center relative">
-                      {product.image.kind === 'url' && (
-                        <img src={product.image.url} className="w-full h-full object-cover" alt={product.name} />
-                      )}
-                      {product.image.kind === 'local' && (
-                        <LocalImage id={product.image.id} className="w-full h-full object-cover" alt={product.name} />
-                      )}
-                      {product.image.kind === 'gradient' && (
-                        <GradientVisual a={product.image.a} b={product.image.b} className="absolute inset-0 h-full w-full" />
-                      )}
+                      <ProductImageView
+                        image={getProductPrimaryImage(product)}
+                        alt={product.name}
+                        className="h-full w-full object-cover"
+                      />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-xs text-white/60">{product.brand}</p>
                       <p className="font-medium truncate text-white">{product.name}</p>
                       <p className="text-sm text-accent font-semibold">
-                        {formatMXN(product.variants[0]?.price ?? 0)}
+                        {formatMXN(product.variant.price)}
                       </p>
                     </div>
                     <span className="text-xs text-white/70 bg-white/10 px-2 py-1 rounded">

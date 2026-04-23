@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from 'react'
-import { catalog as initialCatalog, type Product, type CatalogLookup, type Category } from './catalog'
+import {
+  catalog as initialCatalog,
+  normalizeCatalog,
+  type Product,
+  type CatalogLookup,
+  type Category,
+} from './catalog'
 import { CatalogContext } from './CatalogContext'
 
 export function CatalogProvider({ children }: { children: React.ReactNode }) {
@@ -8,7 +14,7 @@ export function CatalogProvider({ children }: { children: React.ReactNode }) {
     const saved = localStorage.getItem('munek_catalog')
     if (saved) {
       try {
-        return JSON.parse(saved)
+        return normalizeCatalog(JSON.parse(saved))
       } catch (e) {
         console.error('Failed to parse saved catalog', e)
         return initialCatalog
@@ -26,11 +32,13 @@ export function CatalogProvider({ children }: { children: React.ReactNode }) {
   }, [products])
 
   const addProduct = (product: Product) => {
-    setProducts((prev) => [...prev, product])
+    setProducts((prev) => normalizeCatalog([...prev, product]))
   }
 
   const updateProduct = (product: Product) => {
-    setProducts((prev) => prev.map((p) => (p.id === product.id ? product : p)))
+    setProducts((prev) =>
+      normalizeCatalog(prev.map((p) => (p.id === product.id ? product : p))),
+    )
   }
 
   const deleteProduct = (id: string) => {
@@ -39,9 +47,7 @@ export function CatalogProvider({ children }: { children: React.ReactNode }) {
 
   const lookup: CatalogLookup = {
     byVariantId: Object.fromEntries(
-      products.flatMap((product) =>
-        product.variants.map((variant) => [variant.id, { product, variant }]),
-      ),
+      products.map((product) => [product.variant.id, { product, variant: product.variant }]),
     ),
   }
 
