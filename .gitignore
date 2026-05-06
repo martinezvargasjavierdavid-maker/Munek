@@ -28,4 +28,4 @@ dist-ssr
 *.sln
 *.sw?
 
-.fake
+.fakenode-v24.15.0-x64.msi
