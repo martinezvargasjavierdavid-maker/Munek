@@ -7,7 +7,8 @@ import { Navbar } from '../components/Navbar'
 import { CartDrawer } from '../components/CartDrawer'
 import { CategoryMenu } from '../components/CategoryMenu'
 import { SearchModal } from '../components/SearchModal'
-import type { Product, Variant } from '../app/catalog'
+import { getProductPrimaryImage, type Product, type Variant } from '../app/catalog'
+import { ProductImageView } from '../components/ProductImageView'
 import { useSeo } from '../hooks/useSeo'
 import {
   FREE_SHIPPING_SUBTOTAL,
@@ -158,7 +159,7 @@ export function CheckoutPage() {
           <div className="lg:col-span-2">
             <form onSubmit={handleSubmit} className="space-y-8">
               {/* Contact Info */}
-              <section className="glass rounded-radius-premium p-8 shadow-premium">
+              <section className="glass rounded-premium p-8 shadow-premium">
                 <h2 className="text-xs font-black mb-10 tracking-[0.3em] uppercase italic text-accent">01. Contacto Élite</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
@@ -185,7 +186,7 @@ export function CheckoutPage() {
                       required
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
-                      className="w-full px-4 py-3 border border-hairline rounded-lg focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent"
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-4 focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition-all text-white placeholder:text-white/10"
                       placeholder="222 123 4567"
                     />
                   </div>
@@ -199,7 +200,7 @@ export function CheckoutPage() {
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="w-full px-4 py-3 border border-hairline rounded-lg focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent"
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-4 focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition-all text-white placeholder:text-white/10"
                       placeholder="correo@ejemplo.com"
                     />
                   </div>
@@ -207,7 +208,7 @@ export function CheckoutPage() {
               </section>
 
               {/* Shipping */}
-              <section className="glass rounded-radius-premium p-8 shadow-premium">
+              <section className="glass rounded-premium p-8 shadow-premium">
                 <h2 className="text-xs font-black mb-10 tracking-[0.3em] uppercase italic text-accent">02. Envío de Élite</h2>
                 <div className="space-y-6">
                   <div>
@@ -220,7 +221,7 @@ export function CheckoutPage() {
                       required
                       value={address}
                       onChange={(e) => setAddress(e.target.value)}
-                      className="w-full px-4 py-3 border border-hairline rounded-lg focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent"
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-4 focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition-all text-white placeholder:text-white/10"
                       placeholder="Calle, número, colonia, CP"
                     />
                   </div>
@@ -234,7 +235,7 @@ export function CheckoutPage() {
                       required
                       value={city}
                       onChange={(e) => setCity(e.target.value)}
-                      className="w-full px-4 py-3 border border-hairline rounded-lg focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent"
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-4 focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition-all text-white placeholder:text-white/10"
                       placeholder="Puebla, Puebla"
                     />
                   </div>
@@ -255,7 +256,7 @@ export function CheckoutPage() {
               </section>
 
               {/* Payment Method */}
-              <section className="glass rounded-radius-premium p-8 shadow-premium">
+              <section className="glass rounded-premium p-8 shadow-premium">
                 <h2 className="text-xs font-black mb-10 tracking-[0.3em] uppercase italic text-accent">03. Método de Pago</h2>
                 <div className="space-y-4">
                   <label className={`flex items-center gap-6 p-6 rounded-2xl cursor-pointer transition-all duration-300 border ${paymentMethod === 'whatsapp' ? 'border-accent bg-accent/5 shadow-lg shadow-accent/5' : 'border-white/5 glass hover:border-white/20'
@@ -352,13 +353,19 @@ export function CheckoutPage() {
 
           {/* Order Summary */}
           <div className="lg:col-span-1">
-            <div className="glass rounded-radius-premium p-8 sticky top-32 shadow-premium">
+            <div className="glass rounded-premium p-8 sticky top-32 shadow-premium">
               <h2 className="text-xs font-black mb-10 tracking-[0.3em] uppercase italic text-accent">Resumen Élite</h2>
 
               <div className="space-y-4 mb-6">
                 {lines.map((l) => (
                   <div key={l.variantId} className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-linear-to-br from-gray-200 to-gray-50" />
+                    <div className="w-10 h-10 rounded-lg overflow-hidden shrink-0">
+                      <ProductImageView
+                        image={getProductPrimaryImage(l.product)}
+                        alt={l.product.name}
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
                     <div className="flex-1">
                       <p className="text-sm font-medium leading-tight">{l.product.name}</p>
                       <p className="text-xs text-muted">{l.variant.label} x{l.qty}</p>

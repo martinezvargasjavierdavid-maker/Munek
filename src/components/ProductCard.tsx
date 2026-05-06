@@ -21,7 +21,7 @@ export function ProductCard({ product, onAdd }: Props) {
   return (
     <article
       id={`product-${product.id}`}
-      className="group bg-zinc-900/50 rounded-radius-premium overflow-hidden border border-hairline hover:shadow-premium transition-all duration-500 hover:-translate-y-1"
+      className="group bg-zinc-900/50 rounded-premium overflow-hidden border border-hairline hover:shadow-premium transition-all duration-500 hover:-translate-y-1"
     >
       <Link to={`/producto/${product.id}`} className="block">
         <div className="relative aspect-square overflow-hidden">

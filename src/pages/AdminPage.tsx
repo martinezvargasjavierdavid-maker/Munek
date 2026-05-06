@@ -17,7 +17,13 @@ import { Navbar } from '../components/Navbar'
 import { useCart } from '../app/useCart'
 import { saveImage, deleteImage as removeFromStorage } from '../app/imageStorage'
 import { useSeo } from '../hooks/useSeo'
-import { ADMIN_CONFIGURED, ADMIN_EMAIL, ADMIN_ENABLED, ADMIN_PASSWORD } from '../app/site'
+import {
+  ADMIN_CONFIGURED,
+  ADMIN_EMAIL,
+  ADMIN_ENABLED,
+  ADMIN_PASSWORD,
+  CATALOG_CSV_URL,
+} from '../app/site'
 import { ProductImageView } from '../components/ProductImageView'
 
 const ADMIN_SESSION_KEY = 'munek_admin_session'
@@ -40,6 +46,11 @@ type ProductFormData = {
   groupId: string
   images: ProductImage[]
   variant: VariantDraft
+}
+
+type FormNotice = {
+  tone: 'success' | 'error'
+  text: string
 }
 
 function createEmptyVariantDraft(): VariantDraft {
@@ -95,6 +106,59 @@ function parseMoney(value: string) {
   return Number.isFinite(parsed) ? parsed : 0
 }
 
+function isPlaceholderGradient(images: ProductImage[]) {
+  return images.length === 1 && images[0].kind === 'gradient'
+}
+
+function getEditableImages(images: ProductImage[]) {
+  return isPlaceholderGradient(images) ? [] : images
+}
+
+function appendProductImages(currentImages: ProductImage[], additions: ProductImage[]) {
+  const nextImages = [...getEditableImages(currentImages), ...additions].slice(
+    0,
+    MAX_PRODUCT_IMAGES,
+  )
+
+  return nextImages.length > 0 ? normalizeProductImages(nextImages) : [createDefaultProductImage()]
+}
+
+function normalizeProductImageUrl(value: string) {
+  const trimmed = value.trim()
+  if (!trimmed) return null
+  if (trimmed.startsWith('/')) return trimmed
+
+  try {
+    const url = new URL(trimmed)
+    return url.protocol === 'http:' || url.protocol === 'https:' ? url.toString() : null
+  } catch {
+    return null
+  }
+}
+
+function moveImage(images: ProductImage[], index: number, direction: -1 | 1) {
+  const targetIndex = index + direction
+  if (targetIndex < 0 || targetIndex >= images.length) return images
+
+  const nextImages = images.slice()
+  const current = nextImages[index]
+  nextImages[index] = nextImages[targetIndex]
+  nextImages[targetIndex] = current
+  return nextImages
+}
+
+function makePrimaryImage(images: ProductImage[], index: number) {
+  if (index <= 0 || index >= images.length) return images
+
+  const nextImages = images.slice()
+  const [selectedImage] = nextImages.splice(index, 1)
+  return selectedImage ? [selectedImage, ...nextImages] : images
+}
+
+function getErrorText(error: unknown, fallback: string) {
+  return error instanceof Error && error.message ? error.message : fallback
+}
+
 function buildProductFromForm(formData: ProductFormData, editingId: string | null): Product {
   const nextTimestamp = Date.now()
   const productId = editingId || `p-${nextTimestamp}`
@@ -147,6 +211,10 @@ function isLocalImageStillReferenced(
 }
 
 async function optimizeAndSaveImage(file: File): Promise<ProductImage> {
+  if (!file.type.startsWith('image/')) {
+    throw new Error('El archivo seleccionado no es una imagen compatible')
+  }
+
   const dataUrl = await new Promise<string>((resolve, reject) => {
     const reader = new FileReader()
     reader.onload = () => resolve(String(reader.result))
@@ -166,6 +234,10 @@ async function optimizeAndSaveImage(file: File): Promise<ProductImage> {
   let height = imageElement.height
   const maxSize = 1200
 
+  if (width <= 0 || height <= 0) {
+    throw new Error('La imagen no tiene dimensiones válidas')
+  }
+
   if (width > height && width > maxSize) {
     height *= maxSize / width
     width = maxSize
@@ -174,10 +246,16 @@ async function optimizeAndSaveImage(file: File): Promise<ProductImage> {
     height = maxSize
   }
 
-  canvas.width = width
-  canvas.height = height
+  canvas.width = Math.round(width)
+  canvas.height = Math.round(height)
   const context = canvas.getContext('2d')
-  context?.drawImage(imageElement, 0, 0, width, height)
+  if (!context) {
+    throw new Error('No se pudo preparar el optimizador de imágenes')
+  }
+
+  context.fillStyle = '#ffffff'
+  context.fillRect(0, 0, canvas.width, canvas.height)
+  context.drawImage(imageElement, 0, 0, canvas.width, canvas.height)
 
   const blob = await new Promise<Blob>((resolve, reject) => {
     canvas.toBlob(
@@ -207,6 +285,11 @@ export function AdminPage() {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [formData, setFormData] = useState<ProductFormData>(() => createEmptyFormData())
   const [optimizing, setOptimizing] = useState(false)
+  const [imageUrlInput, setImageUrlInput] = useState('')
+  const [formNotice, setFormNotice] = useState<FormNotice | null>(null)
+
+  const editableImageCount = getEditableImages(formData.images).length
+  const imageSlotsRemaining = Math.max(0, MAX_PRODUCT_IMAGES - editableImageCount)
 
   const relatedCount = formData.groupId
     ? products.filter(
@@ -242,29 +325,45 @@ export function AdminPage() {
   const resetForm = () => {
     setEditingId(null)
     setFormData(createEmptyFormData())
+    setImageUrlInput('')
+    setFormNotice(null)
   }
 
   const handleEdit = (product: Product) => {
     setEditingId(product.id)
     setFormData(productToFormData(product))
+    setImageUrlInput('')
+    setFormNotice(null)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files ?? [])
-    if (files.length === 0) return
+    const selectedFiles = Array.from(e.target.files ?? [])
+    const files = selectedFiles.filter((file) => file.type.startsWith('image/'))
+    if (files.length === 0) {
+      if (selectedFiles.length > 0) {
+        setFormNotice({
+          tone: 'error',
+          text: 'Selecciona archivos de imagen compatibles.',
+        })
+      }
+      e.target.value = ''
+      return
+    }
 
-    const currentImages =
-      formData.images.length === 1 && formData.images[0].kind === 'gradient'
-        ? []
-        : formData.images
+    const currentImages = getEditableImages(formData.images)
     const availableSlots = Math.max(0, MAX_PRODUCT_IMAGES - currentImages.length)
     if (availableSlots === 0) {
+      setFormNotice({
+        tone: 'error',
+        text: `Este producto ya tiene el máximo de ${MAX_PRODUCT_IMAGES} imágenes.`,
+      })
       e.target.value = ''
       return
     }
 
     setOptimizing(true)
+    setFormNotice(null)
 
     try {
       const uploadedImages = await Promise.all(
@@ -272,17 +371,81 @@ export function AdminPage() {
       )
 
       setFormData((prev) => {
-        const previousImages =
-          prev.images.length === 1 && prev.images[0].kind === 'gradient' ? [] : prev.images
         return {
           ...prev,
-          images: normalizeProductImages([...previousImages, ...uploadedImages]),
+          images: appendProductImages(prev.images, uploadedImages),
         }
+      })
+
+      setFormNotice({
+        tone: 'success',
+        text:
+          files.length > availableSlots
+            ? `Se agregaron ${uploadedImages.length} imágenes. Las demás no cabían en el carrusel.`
+            : `Se agregaron ${uploadedImages.length} imágenes al carrusel.`,
+      })
+    } catch (error) {
+      console.error('Error uploading product images:', error)
+      setFormNotice({
+        tone: 'error',
+        text: getErrorText(error, 'No se pudieron procesar las imágenes seleccionadas.'),
       })
     } finally {
       setOptimizing(false)
       e.target.value = ''
     }
+  }
+
+  const handleAddImageUrl = () => {
+    const url = normalizeProductImageUrl(imageUrlInput)
+
+    if (!url) {
+      setFormNotice({
+        tone: 'error',
+        text: 'Pega una URL válida que empiece con http://, https:// o /.'
+      })
+      return
+    }
+
+    if (imageSlotsRemaining === 0) {
+      setFormNotice({
+        tone: 'error',
+        text: `Este producto ya tiene el máximo de ${MAX_PRODUCT_IMAGES} imágenes.`,
+      })
+      return
+    }
+
+    setFormData((prev) => ({
+      ...prev,
+      images: appendProductImages(prev.images, [{ kind: 'url', url }]),
+    }))
+    setImageUrlInput('')
+    setFormNotice({ tone: 'success', text: 'La URL de imagen se agregó al carrusel.' })
+  }
+
+  const handleRemoveImage = (index: number) => {
+    setFormData((prev) => {
+      const nextImages = getEditableImages(prev.images).filter((_, imageIndex) => imageIndex !== index)
+
+      return {
+        ...prev,
+        images: nextImages.length > 0 ? nextImages : [createDefaultProductImage()],
+      }
+    })
+  }
+
+  const handleMoveImage = (index: number, direction: -1 | 1) => {
+    setFormData((prev) => ({
+      ...prev,
+      images: moveImage(prev.images, index, direction),
+    }))
+  }
+
+  const handleMakePrimaryImage = (index: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      images: makePrimaryImage(prev.images, index),
+    }))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -324,6 +487,8 @@ export function AdminPage() {
       images: copyImages ? prev.images.map((image) => ({ ...image })) : [createDefaultProductImage()],
       variant: createEmptyVariantDraft(),
     }))
+    setImageUrlInput('')
+    setFormNotice(null)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
@@ -361,6 +526,14 @@ export function AdminPage() {
             </Link>
           </div>
         </div>
+
+        {CATALOG_CSV_URL && (
+          <div className="mb-8 rounded-2xl border border-accent/20 bg-accent/10 px-6 py-5 text-sm text-white/70">
+            <strong className="text-white">Catálogo externo activo.</strong> La tienda está leyendo
+            productos desde Google Sheets. Los cambios hechos aquí solo sirven como prueba local;
+            para modificar la tienda pública edita la hoja conectada.
+          </div>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
           <div className="lg:col-span-5">
@@ -463,31 +636,73 @@ export function AdminPage() {
                         Carrusel de Esta Variante
                       </h3>
                       <p className="text-xs text-white/40 mt-2">
-                        Cada variante puede tener hasta {MAX_PRODUCT_IMAGES} imágenes propias.
+                        {editableImageCount}/{MAX_PRODUCT_IMAGES} imágenes propias para esta variante.
                       </p>
                     </div>
                     <div className="flex gap-3">
                       <button
                         type="button"
-                        onClick={() =>
+                        onClick={() => {
                           setFormData({ ...formData, images: [createDefaultProductImage()] })
-                        }
+                          setFormNotice({ tone: 'success', text: 'Se restauró el gradiente base.' })
+                        }}
                         className="px-4 py-2 glass rounded-xl text-[10px] font-black uppercase tracking-widest text-white/50 hover:text-white transition-all"
                       >
                         Usar Gradiente
                       </button>
-                      <label className="px-4 py-2 bg-accent/10 border border-accent/20 rounded-xl text-[10px] font-black uppercase tracking-widest text-accent hover:bg-accent/20 transition-all cursor-pointer">
+                      <label
+                        className={`px-4 py-2 bg-accent/10 border border-accent/20 rounded-xl text-[10px] font-black uppercase tracking-widest text-accent hover:bg-accent/20 transition-all cursor-pointer ${
+                          optimizing || imageSlotsRemaining === 0 ? 'pointer-events-none opacity-50' : ''
+                        }`}
+                      >
                         {optimizing ? 'Optimizando...' : 'Subir Imágenes'}
                         <input
                           type="file"
                           accept="image/*"
                           multiple
+                          disabled={optimizing || imageSlotsRemaining === 0}
                           onChange={handleImageUpload}
                           className="hidden"
                         />
                       </label>
                     </div>
                   </div>
+
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <input
+                      type="url"
+                      value={imageUrlInput}
+                      onChange={(e) => setImageUrlInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault()
+                          handleAddImageUrl()
+                        }
+                      }}
+                      placeholder="https://ejemplo.com/producto.jpg"
+                      className="min-w-0 flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:border-accent focus:outline-none transition-all placeholder:text-white/10"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleAddImageUrl}
+                      disabled={imageSlotsRemaining === 0}
+                      className="px-5 py-3 rounded-xl bg-white/5 text-[10px] font-black uppercase tracking-widest text-white/60 transition-all hover:bg-white/10 hover:text-white disabled:cursor-not-allowed disabled:text-white/20"
+                    >
+                      Agregar URL
+                    </button>
+                  </div>
+
+                  {formNotice && (
+                    <div
+                      className={`rounded-2xl border px-5 py-4 text-xs font-bold ${
+                        formNotice.tone === 'error'
+                          ? 'border-red-500/20 bg-red-500/10 text-red-500'
+                          : 'border-accent/20 bg-accent/10 text-white/70'
+                      }`}
+                    >
+                      {formNotice.text}
+                    </div>
+                  )}
 
                   <div className="grid grid-cols-2 gap-4">
                     {Array.from({ length: MAX_PRODUCT_IMAGES }).map((_, index) => {
@@ -509,21 +724,44 @@ export function AdminPage() {
                               </div>
                               <button
                                 type="button"
-                                onClick={() => {
-                                  setFormData((prev) => {
-                                    const nextImages = prev.images.filter((_, imageIndex) => imageIndex !== index)
-                                    return {
-                                      ...prev,
-                                      images:
-                                        nextImages.length > 0 ? nextImages : [createDefaultProductImage()],
-                                    }
-                                  })
-                                }}
+                                onClick={() => handleRemoveImage(index)}
                                 className="absolute top-3 right-3 h-8 w-8 rounded-full bg-black/60 text-white transition-colors hover:bg-red-500"
                                 aria-label={`Quitar imagen ${index + 1}`}
                               >
                                 ×
                               </button>
+                              {!isPlaceholderGradient(formData.images) && (
+                                <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleMakePrimaryImage(index)}
+                                    disabled={index === 0}
+                                    className="rounded-full bg-black/60 px-3 py-1 text-[9px] font-black uppercase tracking-widest text-white/80 transition-colors hover:bg-accent disabled:text-accent disabled:hover:bg-black/60"
+                                  >
+                                    Principal
+                                  </button>
+                                  <div className="flex gap-1">
+                                    <button
+                                      type="button"
+                                      onClick={() => handleMoveImage(index, -1)}
+                                      disabled={index === 0}
+                                      className="h-7 w-7 rounded-full bg-black/60 text-white transition-colors hover:bg-white/20 disabled:opacity-30"
+                                      aria-label={`Mover imagen ${index + 1} a la izquierda`}
+                                    >
+                                      ‹
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleMoveImage(index, 1)}
+                                      disabled={index >= formData.images.length - 1}
+                                      className="h-7 w-7 rounded-full bg-black/60 text-white transition-colors hover:bg-white/20 disabled:opacity-30"
+                                      aria-label={`Mover imagen ${index + 1} a la derecha`}
+                                    >
+                                      ›
+                                    </button>
+                                  </div>
+                                </div>
+                              )}
                             </>
                           ) : (
                             <div className="h-full w-full flex items-center justify-center text-center text-xs font-black uppercase tracking-widest text-white/20 px-6">

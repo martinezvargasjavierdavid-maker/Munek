@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { CartContext, type CartState } from './CartContext'
+import type { CatalogLookup } from './catalog'
 import { useCatalog } from './useCatalog'
 
 export type CartLine = {
@@ -10,7 +11,35 @@ export type CartLine = {
 const STORAGE_KEY = 'munek.cart.v1'
 
 function clampInt(value: number, min: number, max: number) {
+  if (!Number.isFinite(value)) return min
   return Math.min(max, Math.max(min, Math.floor(value)))
+}
+
+function normalizeCartLines(value: unknown): CartLine[] {
+  if (!Array.isArray(value)) return []
+
+  const quantitiesByVariantId = new Map<string, number>()
+
+  value.forEach((line) => {
+    if (!line || typeof line !== 'object') return
+
+    const candidate = line as Partial<CartLine>
+    const variantId = typeof candidate.variantId === 'string' ? candidate.variantId.trim() : ''
+    if (!variantId) return
+
+    const qty = clampInt(Number(candidate.qty), 1, 99)
+    const nextQty = clampInt((quantitiesByVariantId.get(variantId) ?? 0) + qty, 1, 99)
+    quantitiesByVariantId.set(variantId, nextQty)
+  })
+
+  return [...quantitiesByVariantId.entries()].map(([variantId, qty]) => ({ variantId, qty }))
+}
+
+function reconcileCartLines(lines: CartLine[], lookup: CatalogLookup) {
+  return normalizeCartLines(lines).filter((line) => {
+    const hit = lookup.byVariantId[line.variantId]
+    return Boolean(hit?.variant.inStock)
+  })
 }
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
@@ -22,38 +51,40 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     if (!raw) return []
     try {
       const parsed = JSON.parse(raw)
-      return Array.isArray(parsed) ? (parsed as CartLine[]) : []
+      return normalizeCartLines(parsed)
     } catch {
       return []
     }
   })
 
+  const activeLines = useMemo(() => reconcileCartLines(lines, lookup), [lines, lookup])
+
   useEffect(() => {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(lines))
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(activeLines))
     } catch {
       // ignore
     }
-  }, [lines])
+  }, [activeLines])
 
   const totalItems = useMemo(
-    () => lines.reduce((sum, l) => sum + l.qty, 0),
-    [lines],
+    () => activeLines.reduce((sum, l) => sum + l.qty, 0),
+    [activeLines],
   )
 
   const subtotal = useMemo(() => {
-    return lines.reduce((sum, l) => {
+    return activeLines.reduce((sum, l) => {
       const hit = lookup.byVariantId[l.variantId]
       if (!hit) return sum
       return sum + hit.variant.price * l.qty
     }, 0)
-  }, [lines, lookup])
+  }, [activeLines, lookup])
 
   const api: CartState = useMemo(
     () => ({
       cartOpen,
       setCartOpen,
-      lines,
+      lines: activeLines,
       totalItems,
       subtotal,
       add: (variantId, qty = 1) => {
@@ -80,9 +111,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       },
       clear: () => setLines([]),
     }),
-    [cartOpen, lines, subtotal, totalItems, lookup],
+    [activeLines, cartOpen, subtotal, totalItems, lookup],
   )
 
   return <CartContext.Provider value={api}>{children}</CartContext.Provider>
 }
-

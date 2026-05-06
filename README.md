@@ -32,6 +32,16 @@ E‑commerce de suplementos con estética tipo “galería de arte” y un efect
 - Fallback SPA para Netlify via `public/_redirects`
 - Ruta `/admin` deshabilitada por defecto; requiere activación explícita por env
 
+## Catálogo Editable Sin Backend
+
+Para que el cliente modifique productos sin pagar backend, la tienda puede leer un catálogo publicado desde Google Sheets en formato CSV:
+
+- Plantilla base: `public/catalog-template.csv`
+- Guía de configuración: `docs/catalogo-google-sheets.md`
+- Variable de entorno: `VITE_CATALOG_CSV_URL`
+
+El cliente edita la hoja, sube imágenes gratis a Google Drive con acceso público, pega los links en `image1` a `image4`, y la tienda actualiza el catálogo al recargar. Google puede tardar unos minutos en refrescar el CSV publicado.
+
 ## Despliegue y Enrutamiento SPA
 
 Esta app usa React Router con rutas como `/producto/:id`, `/logistica-pro`, `/terminos`, `/privacidad`.
@@ -63,6 +73,7 @@ Revisa `.env.example` para las variables soportadas. Las más importantes son:
 - `VITE_WHATSAPP_NUMBER`
 - `VITE_MERCADO_PAGO_LINK`
 - `VITE_STRIPE_LINK`
+- `VITE_CATALOG_CSV_URL`
 
 ### Admin
 

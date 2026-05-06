@@ -66,6 +66,10 @@ export const STRIPE_LINK = normalizeUrl(
   import.meta.env.VITE_STRIPE_LINK as string | undefined,
 )
 
+export const CATALOG_CSV_URL = normalizeUrl(
+  import.meta.env.VITE_CATALOG_CSV_URL as string | undefined,
+)
+
 export const SOCIAL_LINKS = [
   {
     id: 'facebook',
