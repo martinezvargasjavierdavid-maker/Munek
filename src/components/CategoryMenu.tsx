@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import type { Category } from '../app/catalog'
 import { SOCIAL_LINKS } from '../app/site'
+import { BrandLogo } from './BrandLogo'
 
 type Props = {
   open: boolean
@@ -61,11 +62,7 @@ export function CategoryMenu({
         <div className="flex flex-col h-full bg-linear-to-b from-white/[0.02] to-transparent">
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b border-white/10">
-            <img
-              src="/splementos.png"
-              alt="Muñek Suplementos"
-              className="h-8 w-auto"
-            />
+            <BrandLogo markSize={34} />
             <button
               type="button"
               onClick={onClose}

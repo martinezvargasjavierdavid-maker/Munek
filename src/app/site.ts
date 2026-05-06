@@ -1,5 +1,5 @@
 export const SITE_NAME = 'MUNEK SUPLEMENTOS'
-export const DEFAULT_SOCIAL_IMAGE_PATH = '/splementos.png'
+export const DEFAULT_SOCIAL_IMAGE_PATH = '/icon.svg'
 
 const DEFAULT_SITE_URL = 'https://muneksuplementos.com'
 const DEFAULT_CONTACT_EMAIL = 'elite@muneksuplementos.com'
@@ -8,6 +8,8 @@ const DEFAULT_CONTACT_PHONE = '2462094321'
 const DEFAULT_WHATSAPP_NUMBER = '522462094321'
 const DEFAULT_FREE_SHIPPING_SUBTOTAL = 999
 const DEFAULT_SHIPPING_COST = 150
+const DEFAULT_CATALOG_CSV_URL =
+  'https://docs.google.com/spreadsheets/d/e/2PACX-1vTrZC0GrVa5KyWEvBVDjatUKHTQVKW3px_-B3ic9KHKUIgQshtL1HDx7vA-T8q0W4EtiqU2DFqNiF-1/pub?gid=0&single=true&output=csv'
 
 function trimTrailingSlash(value: string) {
   return value.replace(/\/+$/, '')
@@ -68,7 +70,7 @@ export const STRIPE_LINK = normalizeUrl(
 
 export const CATALOG_CSV_URL = normalizeUrl(
   import.meta.env.VITE_CATALOG_CSV_URL as string | undefined,
-)
+) || DEFAULT_CATALOG_CSV_URL
 
 export const SOCIAL_LINKS = [
   {

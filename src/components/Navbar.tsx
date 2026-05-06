@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { BrandLogo } from './BrandLogo'
 
 type Props = {
   cartCount: number
@@ -29,19 +30,7 @@ export function Navbar({ cartCount, onOpenCart, onOpenMenu, onOpenSearch }: Prop
 
           {/* Center: Logo + Brand Name */}
           <Link to="/" className="absolute left-1/2 -translate-x-1/2 flex items-center gap-3 transition-transform hover:scale-[1.02]">
-            <img
-              src="/splementos.png"
-              alt="Muñek Suplementos"
-              className="h-16 w-auto"
-            />
-            <div className="hidden sm:flex flex-col leading-none">
-              <span className="text-xl font-black tracking-tight">
-                MUÑEK
-              </span>
-              <span className="text-[10px] font-medium tracking-[0.3em] text-accent">
-                SUPLEMENTOS
-              </span>
-            </div>
+            <BrandLogo markSize={42} textClassName="hidden sm:flex" />
           </Link>
 
           {/* Right: Icons */}

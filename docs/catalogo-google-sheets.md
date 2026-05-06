@@ -18,6 +18,7 @@ id,groupId,variantId,name,brand,category,description,tags,size,flavor,price,comp
 - `price` y `compareAt`: numeros en MXN.
 - `inStock`: usa `si` o `no`.
 - `image1` a `image4`: URL publica de imagen.
+- Las imagenes de estas columnas solo se muestran en productos, carrito, busqueda y checkout.
 
 ## Imagenes Sin Costo
 
@@ -34,7 +35,13 @@ La app convierte enlaces de Drive al formato de miniatura publica automaticament
 2. Elige la pestaña del catalogo.
 3. Selecciona formato `CSV`.
 4. Copia la URL publicada.
-5. En Vercel agrega la variable:
+5. Esta tienda ya trae configurada como fuente predeterminada esta hoja:
+
+```text
+https://docs.google.com/spreadsheets/d/e/2PACX-1vTrZC0GrVa5KyWEvBVDjatUKHTQVKW3px_-B3ic9KHKUIgQshtL1HDx7vA-T8q0W4EtiqU2DFqNiF-1/pub?gid=0&single=true&output=csv
+```
+
+Si necesitas cambiarla por otra hoja en el futuro, en Vercel agrega o reemplaza la variable:
 
 ```env
 VITE_CATALOG_CSV_URL=https://docs.google.com/spreadsheets/d/e/.../pub?gid=0&single=true&output=csv

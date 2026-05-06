@@ -6,6 +6,8 @@ import { ProductCard } from '../components/ProductCard'
 import { CategoryMenu } from '../components/CategoryMenu'
 import { SearchModal } from '../components/SearchModal'
 import { ProductCarousel } from '../components/ProductCarousel'
+import { BrandLogo } from '../components/BrandLogo'
+import { BrandMark } from '../components/BrandMark'
 import { useCart } from '../app/useCart'
 import { useCatalog } from '../app/useCatalog'
 import { CATEGORY_OPTIONS, type Category } from '../app/catalog'
@@ -191,7 +193,7 @@ export function HomePage() {
 
       {/* Collaboration Message - Compact Red Full Text */}
       <section className="relative py-12 px-6 bg-accent/90 border-y border-white/10 overflow-hidden">
-        <div className="absolute inset-0 bg-[url('/splementos.png')] bg-center opacity-5 scale-150 rotate-12" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.18)_0_1px,transparent_1px)] [background-size:24px_24px] opacity-20 rotate-12 scale-110" />
         <div className="max-w-4xl mx-auto relative z-10">
           <div className="relative p-10 glass rounded-3xl text-center shadow-premium">
             <p className="text-xl md:text-3xl font-black text-white leading-[1.1] tracking-tighter uppercase italic max-w-3xl mx-auto">
@@ -252,11 +254,10 @@ export function HomePage() {
             <div className="lg:col-span-5 relative">
               <div className="relative group">
                 <div className="aspect-square rounded-premium overflow-hidden glass p-8 flex items-center justify-center shadow-premium relative z-10">
-                  <img
-                    src="/splementos.png"
-                    alt="Logo Muñek"
-                    className="w-[85%] h-[85%] object-contain transition-transform duration-1000 group-hover:scale-110 group-hover:rotate-2"
-                  />
+                  <div className="flex flex-col items-center justify-center gap-6 transition-transform duration-1000 group-hover:scale-105">
+                    <BrandMark size={132} />
+                    <BrandLogo markSize={0} className="justify-center text-center" />
+                  </div>
                   <div className="absolute bottom-8 left-8 right-8 text-left">
                     <p className="text-[10px] font-black tracking-[0.5em] uppercase mb-1 text-accent">EST. 2024</p>
                     <h3 className="text-2xl font-black leading-none text-white italic uppercase tracking-tighter">Pasión de Élite.</h3>
@@ -417,11 +418,7 @@ export function HomePage() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-16">
             <div className="space-y-8">
               <div className="glass p-6 rounded-2xl inline-block shadow-premium group">
-                <img
-                  src="/splementos.png"
-                  alt="Muñek Suplementos"
-                  className="h-14 w-auto grayscale group-hover:grayscale-0 transition-all duration-500"
-                />
+                <BrandLogo markSize={42} />
               </div>
               <p className="text-white/40 text-sm leading-relaxed max-w-60 font-medium italic">
                 Elevando tu potencial humano a través de la suplementación de élite. Est. 2024.

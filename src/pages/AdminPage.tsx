@@ -25,6 +25,7 @@ import {
   CATALOG_CSV_URL,
 } from '../app/site'
 import { ProductImageView } from '../components/ProductImageView'
+import { BrandMark } from '../components/BrandMark'
 
 const ADMIN_SESSION_KEY = 'munek_admin_session'
 
@@ -1137,11 +1138,7 @@ function AdminLogin({ onLogin }: { onLogin: (email: string, password: string) =>
       <div className="w-full max-w-md relative z-10">
         <div className="text-center mb-12">
           <div className="glass w-24 h-24 rounded-3xl mx-auto flex items-center justify-center mb-8 shadow-premium group">
-            <img
-              src="/splementos.png"
-              alt="Muñek"
-              className="w-16 h-16 object-contain grayscale group-hover:grayscale-0 transition-all duration-700"
-            />
+            <BrandMark size={64} className="transition-transform duration-700 group-hover:scale-110" />
           </div>
           <span className="text-accent text-[10px] font-black tracking-[0.5em] uppercase italic block mb-3">
             Acceso Restringido
