@@ -1,0 +1,3 @@
+id,groupId,variantId,name,brand,category,description,tags,size,flavor,price,compareAt,inStock,image1,image2,image3,image4
+p-crea-250,p-creatina,v-crea-250,Creatina Monohidratada Micronizada,MUÑEK LABS,Creatina,"Pura, sin rellenos. Fuerza, potencia y mejor rendimiento en series pesadas.","monohidratada, fuerza, volumen",250 g,Sin sabor,349,399,si,/splementos.png,,,
+p-crea-500,p-creatina,v-crea-500,Creatina Monohidratada Micronizada,MUÑEK LABS,Creatina,"Pura, sin rellenos. Fuerza, potencia y mejor rendimiento en series pesadas.","monohidratada, fuerza, volumen",500 g,Sin sabor,549,649,si,/splementos.png,,,
