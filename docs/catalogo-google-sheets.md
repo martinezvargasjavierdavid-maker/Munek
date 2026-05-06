@@ -20,6 +20,28 @@ id,groupId,variantId,name,brand,category,description,tags,size,flavor,price,comp
 - `image1` a `image4`: URL publica de imagen.
 - Las imagenes de estas columnas solo se muestran en productos, carrito, busqueda y checkout.
 
+## Productos Y Variantes
+
+Cada fila del Sheet representa una variante vendible. Por ejemplo, si una creatina tiene
+250 g, 500 g y 1 kg, deben existir 3 filas.
+
+Para que la tienda las muestre como variantes del mismo producto:
+
+- Usa el mismo `groupId` en todas esas filas.
+- Usa el mismo `name`, `brand`, `category`, `description` y `tags`.
+- Cambia `id` y `variantId` en cada fila para que sean unicos.
+- Cambia `size`, `flavor`, `price`, `compareAt` e `inStock` segun la variante.
+
+Ejemplo:
+
+```csv
+p-crea-250,p-crea-01,v-crea-250,Creatina Monohidratada Micronizada,MUÑEK LABS,Creatina,"Pura, sin rellenos.","monohidratada, fuerza",250 g,Sin sabor,349,399,si,,,,
+p-crea-500,p-crea-01,v-crea-500,Creatina Monohidratada Micronizada,MUÑEK LABS,Creatina,"Pura, sin rellenos.","monohidratada, fuerza",500 g,Sin sabor,549,649,si,,,,
+```
+
+Si quieres agregar otro sabor o tamaño, duplica una fila del mismo producto, cambia `id`,
+`variantId`, `size`, `flavor`, precio y stock.
+
 ## Imagenes Sin Costo
 
 1. Sube las fotos a Google Drive.
